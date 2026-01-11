@@ -1,5 +1,5 @@
 nav:
     - Introduction: index.md
-    - How To: ../general/index.md
+    - general
     - FAQ: FAQ.md
-    - Misc: ../misc/index.md
+    - misc
