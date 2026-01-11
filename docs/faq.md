@@ -241,10 +241,10 @@ hide:
             - traefik.http.services.foo.loadbalancer.serverstransport=ignorecert@file
             - traefik.http.services.foo.loadbalancer.server.scheme=https
         ```
-  
+
     === "Caddy"
 
-        When reverse proxying an HTTPS backend that uses a self-signed certificate, Caddy will normally reject it because it cannot verify the certificate authority. 
+        When reverse proxying an HTTPS backend that uses a self-signed certificate, Caddy will normally reject it because it cannot verify the certificate authority.
 
         To skip this verification we can modify site entry of the [caddyfile](https://caddyserver.com/docs/quick-starts/caddyfile) as shown below:
 
@@ -291,7 +291,7 @@ hide:
             caddy.reverse_proxy.transport.tls:
             caddy.reverse_proxy.transport.tls_insecure_skip_verify:
         ```
-        
+
 ??? faq "Why does LinuxServer.io recommend to use docker-compose over Portainer?"
 
     ##### Why does LinuxServer.io recommend to use docker-compose over Portainer? { #portainer }
