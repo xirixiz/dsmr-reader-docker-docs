@@ -65,5 +65,5 @@ The following configurations are entirely unsupported and you are unlikely to be
 The following configurations don't fit nicely into any single category because "it depends". They're not formally supported but we may provide reasonable endeavours support in some cases.
 
 * Running our containers with a root (`0`) `PUID` or `PGID`
-* Running our containers with a read-only container filesystem. Please [read the docs](https://docs.linuxserver.io/misc/read-only/).
-* Use of the `user` directive to run containers as a custom UID/GID. Please [read the docs](https://docs.linuxserver.io/misc/non-root/).
+* Running our containers with a read-only container filesystem. Please [read the docs](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/read-only/).
+* Use of the `user` directive to run containers as a custom UID/GID. Please [read the docs](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/non-root/).

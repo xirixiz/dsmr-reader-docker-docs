@@ -121,7 +121,7 @@ For most users, using `PUID` and `PGID` provides the best balance of security, c
 
 ## Support Policy
 
-Operation of our container image with a non-root user is supported on a Reasonable Endeavours basis. Please see our [Support Policy](https://misc/supportpolicy) for more details.
+Operation of our container image with a non-root user is supported on a Reasonable Endeavours basis. Please see our [Support Policy](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/supportpolicy) for more details.
 
 ## Change History
 
