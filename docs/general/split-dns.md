@@ -1,4 +1,4 @@
-Split DNS
+![Split DNS](../assets/images/split-dns.png)
 
 # Split DNS
 
