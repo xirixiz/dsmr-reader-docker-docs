@@ -1,11 +1,17 @@
+
 site_name: DSMR Reader Docker Docs
-site_url: https://www.yunta.nl/dsmr-reader-docker-docs/
-# site_url: https://xirixiz.github.io/dsmr-reader-docker-docs/
+# site_url: https://www.yunta.nl/dsmr-reader-docker-docs/
+site_url: https://xirixiz.github.io/dsmr-reader-docker-docs/
+site_dir: site
 site_author: Bram van Dartel (xirixiz)
 site_description: Welcome to the home of the DSMR Reader Docker Docs!
+
 repo_name: xirixiz/dsmr-reader-docker-docs
 repo_url: https://github.com/xirixiz/dsmr-reader-docker-docs
+edit_uri: edit/main/docs/
+
 copyright: Copyright &copy; 2026 Bram van Dartel (xirixiz)
+
 theme:
   name: material
   features:
@@ -33,22 +39,13 @@ theme:
         name: Switch to light mode
   favicon: assets/favicon.ico
   logo: assets/icon.png
+
 extra_css:
   - stylesheets/extra.css
-extra_javascript:
-  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
-  - javascripts/tablesort.js
+
 markdown_extensions:
-  - pymdownx.tabbed:
-      combine_header_slug: true
-      alternate_style: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify
-        kwds:
-          case: lower
   - admonition
   - pymdownx.details
-  - pymdownx.escapeall
-  - pymdownx.extra
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -56,9 +53,13 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      combine_header_slug: true
+      alternate_style: true
   - tables
   - toc:
       permalink: true
+
 plugins:
   - awesome-pages
   - search
