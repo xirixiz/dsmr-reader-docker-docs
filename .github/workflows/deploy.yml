@@ -19,23 +19,54 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5.0.0
         with:
-          python-version: "3.x"
+          fetch-depth: 0
+          sparse-checkout: |
+            docs
+            scripts
+
+      - name: Setup python
+        uses: actions/setup-python@v6.1.0
+        with:
+          python-version: 3.x
+
+      - name: Get pip cache directory
+        id: pip-cache
+        run: |
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v5.0.1
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache d2 database
+        uses: actions/cache/restore@v5.0.1 # We only want to restore the cache, to avoid overwriting the cache on PRs
+        with:
+          path: .cache/plugin/d2
+          key: ${{ runner.os }}-d2
+
+      - name: Install d2
+        run: |
+          mkdir -p /tmp/d2
+          D2_VERSION=$(curl -s https://api.github.com/repos/terrastruct/d2/releases/latest | awk '/tag_name/{print $4;exit}' FS='[""]')
+          curl -o \
+            /tmp/d2.tar.gz -L \
+            "https://github.com/terrastruct/d2/releases/download/${D2_VERSION}/d2-${D2_VERSION}-linux-amd64.tar.gz"
+          tar xzf /tmp/d2.tar.gz -C /tmp/d2 --strip-components=1
+          cp /tmp/d2/bin/d2 /usr/local/bin
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install mkdocs-material
+        run: pip install -r docs/requirements.txt
 
-      - name: Build
-        run: mkdocs build --strict
+      - name: Build documentation
+        run: mkdocs build
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
 
   deploy:
     needs: build
@@ -44,5 +75,65 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Checkout repository
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
+          sparse-checkout: |
+            docs
+            scripts
+      - name: Setup python
+        uses: actions/setup-python@v6.1.0
+        with:
+          python-version: 3.x
+      - name: Get pip cache directory
+        id: pip-cache
+        run: |
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+      - name: Cache dependencies
+        uses: actions/cache@v5.0.1
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache d2 database
+        uses: actions/cache@v5.0.1
+        with:
+          path: .cache/plugin/d2
+          key: ${{ runner.os }}-d2
+
+      - name: Install d2
+        run: |
+          mkdir -p /tmp/d2
+          D2_VERSION=$(curl -s https://api.github.com/repos/terrastruct/d2/releases/latest | awk '/tag_name/{print $4;exit}' FS='[""]')
+          curl -o \
+            /tmp/d2.tar.gz -L \
+            "https://github.com/terrastruct/d2/releases/download/${D2_VERSION}/d2-${D2_VERSION}-linux-amd64.tar.gz"
+          tar xzf /tmp/d2.tar.gz -C /tmp/d2 --strip-components=1
+          cp /tmp/d2/bin/d2 /usr/local/bin
+
+      - name: Install dependencies
+        run: pip install -r docs/requirements.txt
+
+      - name: Build documentation
+        run: mkdocs build
+
+      - name: Upload static files as artifact
+        uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          path: site/
+  pages:
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
