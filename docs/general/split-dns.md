@@ -1,4 +1,4 @@
-![Split DNS](../assets/images/split-dns.png)
+Split DNS
 
 # Split DNS
 
@@ -64,7 +64,7 @@ For example, you can exclude `wg.domain.com` on AdguardHome by creating another 
 
 ## NAT Reflection / NAT Loopback / Hairpin NAT
 
-NAT reflection is an alternative option to split DNS, which can provide some but not all of the same same benefits, it allows LAN devices to use the external IP and get port-forwarded without being NAT'd. 
+NAT reflection is an alternative option to split DNS, which can provide some but not all of the same same benefits, it allows LAN devices to use the external IP and get port-forwarded without being NAT'd.
 
 It's usually a setting on specific routers that can be enabled via a checkbox.
 
