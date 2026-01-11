@@ -1,3 +1,1 @@
-# Welcome
-
-This is a documentation site.
+--8<-- "README.md"
