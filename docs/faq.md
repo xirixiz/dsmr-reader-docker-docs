@@ -1,6 +1,7 @@
 ---
 hide:
   - navigation
+  - toc
 ---
 # Frequently Asked Questions
 
