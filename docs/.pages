@@ -1,5 +1,5 @@
 nav:
     - Introduction: index.md
-    - How To3: docs/general/index.md
+    - How To: docs/general/index.md
     - FAQ: FAQ.md
-    - Misc3: docs/misc/index.md
+    - Misc: docs/misc/index.md
