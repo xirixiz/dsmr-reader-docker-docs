@@ -1,6 +1,5 @@
 title: How to
 nav:
-    - containers-101.md
     - container-customization.md
     - container-execution.md
     - docker-compose.md

@@ -8,7 +8,6 @@
 ## General
 
 * [Container Execution](general/container-execution.md)
-* [Docker Containers: 101](general/containers-101.md)
 * [Running LinuxServer Containers](general/running-our-containers.md)
 * [Customizing LinuxServer Containers](general/container-customization.md)
 * [Docker Compose](general/docker-compose.md)
