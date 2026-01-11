@@ -58,3 +58,21 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+plugins:
+  - awesome-pages
+  - d2:
+      layout: elk
+      pad: 0
+      theme: 3
+      dark_theme: 200
+  - group:
+      enabled: false
+      plugins:
+        - git-revision-date-localized:
+            enable_creation_date: true
+        - minify:
+            minify_html: true
+  - render_swagger
+  - search
+  - tags:
+      tags: false
