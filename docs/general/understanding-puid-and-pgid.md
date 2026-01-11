@@ -16,7 +16,7 @@ Using the `PUID` and `PGID` allows our containers to map the container's interna
 When creating a container from one of our images, ensure you use the `-e PUID` and `-e PGID` options in your docker command:
 
 ```shell
-docker create --name=beets -e PUID=1000 -e PGID=1000 linuxserver/beets
+docker create --name=dmsr -e PUID=1000 -e PGID=1000 xirixiz/dsmr-reader-docker
 ```
 
 Or, if you use `docker-compose`, add them to the `environment:` section:

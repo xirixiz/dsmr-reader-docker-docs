@@ -42,5 +42,5 @@ docker inspect -f '{{ index .Config.Labels "build_version" }}' <container_name>
 Or the image:
 
 ```shell
-docker inspect -f '{{ index .Config.Labels "build_version" }}' linuxserver/<image_name>
+docker inspect -f '{{ index .Config.Labels "build_version" }}' xirixiz/<image_name>
 ```

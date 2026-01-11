@@ -64,16 +64,14 @@ or
 ```yaml
 services:
   sonarr:
-    image: lscr.io/linuxserver/radarr:latest
-    container_name: radarr
+    image: xirixiz/dsmr-reader-docker:latest
+    container_name: dmsr
     environment:
       - TZ=Europe/London
     volumes:
-      - /path/to/radarr/data:/config
-      - /path/to/movies:/movies
-      - /path/to/downloadclient-downloads:/downloads
+      - /path/from:/path_to
     ports:
-      - 7878:7878
+      - 7980:80
     restart: unless-stopped
     user: 1000:1000
     tmpfs:
@@ -84,9 +82,8 @@ services:
 
 ## Support Policy
 
-Operation of our images with a non-root user is supported on a Reasonable Endeavours basis and *only* for images which we have specifically tested. These images will have their ability to be run with a non-root user noted in the readme, along with any additional caveats. Please see our [Support Policy](https://linuxserver.io/supportpolicy) for more details.
+Operation of our images with a non-root user is supported on a Reasonable Endeavours basis and *only* for images which we have specifically tested. These images will have their ability to be run with a non-root user noted in the readme, along with any additional caveats. Please see our [Support Policy](https://misc/supportpolicy) for more details.
 
 ## Change History
 
-* 2025-08-13 - Add notes about `no-new-privileges=true`
-* 2024-12-17 - Initial release
+
