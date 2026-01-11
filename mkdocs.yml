@@ -1,18 +1,15 @@
 site_name: DSMR Reader Docker Docs
 site_url: https://www.yunta.nl/dsmr-reader-docker-docs/
-site_author: xirixiz
+site_author: Bram van Dartel (xirixiz)
 site_description: Welcome to the home of the DSMR Reader Docker Docs!
 repo_name: xirixiz/dsmr-reder-docker-docs
 repo_url: https://github.com/xirixiz/dsmr-reder-docker-docs
-copyright: Copyright &copy; 2026 xirixiz
+copyright: Copyright &copy; 2026 Bram van Dartel (xirixiz)
 theme:
   name: material
   features:
-    # - content.action.edit
     - content.code.copy
     - navigation.footer
-    # - navigation.instant
-    # - navigation.prune
     - navigation.tabs
     - navigation.top
     - navigation.tracking
@@ -23,20 +20,20 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: black
+      primary: red
       accent: indigo
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: black
+      primary: red
       accent: indigo
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   favicon: assets/favicon.ico
-  logo: assets/icon.svg
+  logo: assets/icon.png
 extra_css:
   - stylesheets/extra.css
 extra_javascript:

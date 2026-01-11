@@ -8,7 +8,7 @@ The team resides primarily in Issues and/or Discussions on the source repositori
 
 | Where | Link |
 | :--- | :--- |
-| DSMR Reader Docker Docs | [https://dsmr-reader.readthedocs.io/en/v6/](https://www.yunta.nl/dsmr-reader-docker-docs/) |
-| DSMR Reader Dokcer Repo | [https://github.com/xirixiz/dsmr-reader-docker](https://github.com/xirixiz/dsmr-reader-docker) |
 | DSMR Reader Docs | [https://dsmr-reader.readthedocs.io/en/v6/](https://dsmr-reader.readthedocs.io/en/v6/) |
 | DSMR Reader Repo | [https://github.com/dsmrreader/dsmr-reader](https://github.com/dsmrreader/dsmr-reader) |
+| DSMR Reader Docker Docs | [https://dsmr-reader.readthedocs.io/en/v6/](https://www.yunta.nl/dsmr-reader-docker-docs/) |
+| DSMR Reader Dokcer Repo | [https://github.com/xirixiz/dsmr-reader-docker](https://github.com/xirixiz/dsmr-reader-docker) |
