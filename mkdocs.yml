@@ -60,11 +60,6 @@ markdown_extensions:
       permalink: true
 plugins:
   - awesome-pages
-  - d2:
-      layout: elk
-      pad: 0
-      theme: 3
-      dark_theme: 200
   - group:
       enabled: true
       plugins:
