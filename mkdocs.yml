@@ -1,10 +1,10 @@
 site_name: DSMR Reader Docker Docs
-# site_url: https://www.yunta.nl/dsmr-reader-docker-docs/
-site_url: https://xirixiz.github.io/dsmr-reader-docker-docs/
+site_url: https://www.yunta.nl/dsmr-reader-docker-docs/
+# site_url: https://xirixiz.github.io/dsmr-reader-docker-docs/
 site_author: Bram van Dartel (xirixiz)
 site_description: Welcome to the home of the DSMR Reader Docker Docs!
-repo_name: xirixiz/dsmr-reder-docker-docs
-repo_url: https://github.com/xirixiz/dsmr-reder-docker-docs
+repo_name: xirixiz/dsmr-reader-docker-docs
+repo_url: https://github.com/xirixiz/dsmr-reader-docker-docs
 copyright: Copyright &copy; 2026 Bram van Dartel (xirixiz)
 theme:
   name: material
@@ -61,14 +61,6 @@ markdown_extensions:
       permalink: true
 plugins:
   - awesome-pages
-  - group:
-      enabled: true
-      plugins:
-        - git-revision-date-localized:
-            enable_creation_date: true
-        - minify:
-            minify_html: true
-  - render_swagger
   - search
-  - tags:
-      tags: false
+  - minify:
+      minify_html: true
