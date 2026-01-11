@@ -18,10 +18,6 @@
 * [SWAG setup](general/swag.md)
 * [Awesome LSIO](general/awesome-lsio.md)
 
-## Images
-
-* [linuxserver/*](images/docker-*.md)
-
 ## Misc
 
 * [Finances](finances.md)
