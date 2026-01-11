@@ -31,16 +31,29 @@ Execute it with `dtail <container_name>`.
 
 ## Checking the build version
 
-If you are experiencing issues with one of our containers, it helps us to know which version of the image your container is running from. The primary reason we ask for this is because you may be reporting an issue we are aware of and have subsequently fixed. However, if you are running on the latest version of our image, it could indeed be a newly found bug, which we'd want to know more about.
+If you are experiencing issues, knowing exactly which image version your container is running helps us investigate more effectively. You may be reporting a problem that has already been identified and fixed in a newer release. If you are already running the latest version, it may indicate a newly discovered issue, which we would definitely like to investigate further.
 
-To obtain the build version for the container:
+To obtain the build version for the container (f.e. 'dsmr'):
 
 ```shell
-docker inspect -f '{{ index .Config.Labels "build_version" }}' <container_name>
+docker inspect -f '{{ with .Config.Labels -}}
+DSMR upstream:  {{ index . "io.github.dsmrreader.upstream.version" }}
+Docker release: {{ index . "io.github.dsmrreader.docker.release" }}
+OCI version:    {{ index . "org.opencontainers.image.version" }}
+Build date:     {{ index . "org.opencontainers.image.build_date" }}
+Revision:       {{ index . "org.opencontainers.image.revision" }}
+{{- end }}' <container_name>
+
 ```
 
-Or the image:
+Or the image (f.e 'ghcr.io/xirixiz/dsmr-reader-docker'):
 
 ```shell
-docker inspect -f '{{ index .Config.Labels "build_version" }}' xirixiz/<image_name>
+docker inspect -f '{{ with .Config.Labels -}}
+DSMR upstream:  {{ index . "io.github.dsmrreader.upstream.version" }}
+Docker release: {{ index . "io.github.dsmrreader.docker.release" }}
+OCI version:    {{ index . "org.opencontainers.image.version" }}
+Build date:     {{ index . "org.opencontainers.image.build_date" }}
+Revision:       {{ index . "org.opencontainers.image.revision" }}
+{{- end }}' <image_name>
 ```

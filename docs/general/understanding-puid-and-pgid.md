@@ -1,25 +1,35 @@
 # Understanding PUID and PGID
 
 !!! info
-    We are aware that recent versions of the Docker engine have introduced the `--user` flag. Our images are not yet compatible with this, so we recommend continuing usage of PUID and PGID.
+  At this time, DSMR Reader Docker does not fully support running with Docker’s --user flag.
+
+  While recent Docker versions allow containers to run under an arbitrary UID and GID using `--user`, DSMR Reader relies on internal user and group handling, filesystem permissions, and startup logic that assume the container manages its own user context. Using `--user` can therefore lead to permission errors, failed startups, or subtle runtime issues.
+
+  For this reason, we recommend continuing to use `PUID` and `PGID` to control file ownership and access:
+  - They integrate cleanly with the image’s internal permission model
+  - They ensure correct access to mounted volumes
+  - They avoid unpredictable behaviour caused by overriding the container user
+
+  Support for --user may be added in the future, but until then it is not considered a supported configuration.
 
 ## Why use these?
 
-Docker runs all of its containers under the `root` user domain because it requires access to things like network configuration, process management, and your filesystem. This means that the processes running inside your containers also run as `root`. This kind of elevated access is not ideal for day-to-day use, and potentially gives applications the access to things they shouldn't \(although, a strong understanding of volume and port mapping will help with this\).
+By default, Docker starts containers with processes running as the `root` user. This is necessary for certain low level operations such as network setup, process management, and interacting with the filesystem. As a result, applications inside the container also run with elevated privileges.
 
-Another issue is file management within the container's mapped volumes. If the process is running under `root`, all files and directories created during the container's lifespan will be owned by `root`, thus becoming inaccessible by you.
+Running applications as `root` is not ideal for everyday use. It increases the impact of potential misconfigurations or vulnerabilities and can grant applications more access than strictly necessary. While careful volume and port mappings can reduce risk, they do not eliminate it entirely.
 
-Using the `PUID` and `PGID` allows our containers to map the container's internal user to a user on the host machine. All of our containers use this method of user mapping and should be applied accordingly.
+Another common issue is file ownership on mounted volumes. When a container runs as `root`, any files or directories it creates on mapped host volumes will also be owned by `root`, which can make them difficult or impossible for the host user to manage without additional permission changes.
+
+To address this, our images support the use of `PUID` and `PGID`. These environment variables map the container’s internal application user to a specific user and group on the host system. This ensures that files created within mounted volumes are owned by the correct host user and that the container runs with the minimum privileges required.
+
+The container is designed to use this model and should be configured with `PUID` and `PGID` accordingly.
 
 ## Using the variables
 
-When creating a container from one of our images, ensure you use the `-e PUID` and `-e PGID` options in your docker command:
+When creating a container from the container image, ensure you use the `PUID` and `PGID` options:
 
-```shell
-docker create --name=dmsr -e PUID=1000 -e PGID=1000 xirixiz/dsmr-reader-docker
-```
 
-Or, if you use `docker-compose`, add them to the `environment:` section:
+For use with `docker-compose`, add them to the `environment:` section:
 
 ```yaml
 environment:
@@ -27,7 +37,7 @@ environment:
   - PGID=1000
 ```
 
-It is most likely that you will use the `id` of yourself, which can be obtained by running the command below. The two values you will be interested in are the `uid` and `gid`.
+In most cases, you will want to use your own user ID. You can find this by running the command below. The relevant values are the `uid` and `gid`.
 
 ```shell
 id $user
