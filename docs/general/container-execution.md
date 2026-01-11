@@ -33,27 +33,33 @@ Execute it with `dtail <container_name>`.
 
 If you are experiencing issues, knowing exactly which image version your container is running helps us investigate more effectively. You may be reporting a problem that has already been identified and fixed in a newer release. If you are already running the latest version, it may indicate a newly discovered issue, which we would definitely like to investigate further.
 
-To obtain the build version for the container (f.e. 'dsmr'):
+To obtain the build version for the running container (f.e. 'dsmr'):
 
 ```shell
 docker inspect -f '{{ with .Config.Labels -}}
-DSMR upstream:  {{ index . "io.github.dsmrreader.upstream.version" }}
-Docker release: {{ index . "io.github.dsmrreader.docker.release" }}
-OCI version:    {{ index . "org.opencontainers.image.version" }}
-Build date:     {{ index . "org.opencontainers.image.build_date" }}
-Revision:       {{ index . "org.opencontainers.image.revision" }}
+DSMR upstream version: {{ index . "io.github.dsmrreader.upstream.version" }}
+DSMR Docker release:   {{ index . "io.github.dsmrreader.docker.release" }}
+OCI version:           {{ index . "org.opencontainers.image.version" }}
+Build date:            {{ index . "org.opencontainers.image.build_date" }}
+Revision:              {{ index . "org.opencontainers.image.revision" }}
 {{- end }}' <container_name>
 
+```
+
+Or to obtain the build version for the running container (f.e. 'dsmr'), an alternative way:
+
+```shell
+docker exec -ti <container_name> bash -c 'cat /build_version'
 ```
 
 Or the image (f.e 'ghcr.io/xirixiz/dsmr-reader-docker'):
 
 ```shell
 docker inspect -f '{{ with .Config.Labels -}}
-DSMR upstream:  {{ index . "io.github.dsmrreader.upstream.version" }}
-Docker release: {{ index . "io.github.dsmrreader.docker.release" }}
-OCI version:    {{ index . "org.opencontainers.image.version" }}
-Build date:     {{ index . "org.opencontainers.image.build_date" }}
-Revision:       {{ index . "org.opencontainers.image.revision" }}
+DSMR upstream version: {{ index . "io.github.dsmrreader.upstream.version" }}
+DSMR Docker release:   {{ index . "io.github.dsmrreader.docker.release" }}
+OCI version:           {{ index . "org.opencontainers.image.version" }}
+Build date:            {{ index . "org.opencontainers.image.build_date" }}
+Revision:              {{ index . "org.opencontainers.image.revision" }}
 {{- end }}' <image_name>
 ```
