@@ -1,6 +1,5 @@
 nav:
     - containers-101.md
-    - container-branding.md
     - container-customization.md
     - container-execution.md
     - docker-compose.md
