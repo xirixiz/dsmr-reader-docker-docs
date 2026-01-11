@@ -1,0 +1,13 @@
+site_name: DSMR Reader Docker Docs
+site_url: https://docs.xirixiz.io
+site_author: xirixiz
+site_description: Welcome to the home of the DSMR Reader Docker Docs!
+repo_name: xirixiz/dsmr-reder-docker-docs
+repo_url: https://github.com/xirixiz/dsmr-reder-docker-docs
+copyright: Copyright &copy; 2026 xirixiz
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
