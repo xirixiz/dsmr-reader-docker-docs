@@ -10,7 +10,7 @@ Images, tags, and architectures that have been deprecated or archived are not co
 
 ## Formally Supported Environments
 
-DSMR Reader Docker images are built and tested using the latest stable release of Docker CE with containerd and runc on Linux. Builds target the x86_64 (amd64) and aarch64 (arm64) architectures. Any client environment matching these characteristics is considered in scope for support. In addition, any currently supported version of Docker CE and Podman is considered supported.
+DSMR Reader Docker images are built and tested using the latest stable release of Docker CE and Podman on Linux. Builds target the x86_64 (amd64) and aarch64 (arm64) architectures. Any client environment matching these characteristics is considered in scope for support. In addition, any currently supported version of Docker CE and Podman is considered supported.
 
 Both docker compose and the Docker CLI are supported methods for managing containers, with docker compose being the preferred approach.
 

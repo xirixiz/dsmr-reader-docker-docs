@@ -14,7 +14,6 @@ Project communication and support primarily take place through Issues and Discus
 | DSMR Reader Docker Repository | https://github.com/xirixiz/dsmr-reader-docker |
 
 ## Support Policy
+Although examples in the documentation use the `docker` command-line interface, Docker CE and Podman are considered the default and supported container runtimes. In most cases, commands can be translated directly between these runtimes with minimal or no changes. Same counts for `docker compose` and `podman compose`.
 
-Operation of this container image as a non-root user is supported on a reasonable-endeavours basis. Refer to the [Support Policy](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/support-policy) for further details.
-
-Although examples in the documentation use the `docker` command-line interface, Docker CE and Podman are considered the default and supported container runtimes. In most cases, commands can be translated directly between these runtimes with minimal or no changes.
+Refer to the [Support Policy](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/support-policy) for further details.
