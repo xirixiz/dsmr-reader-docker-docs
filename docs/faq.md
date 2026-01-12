@@ -109,7 +109,7 @@ hide:
               caddy.reverse_proxy.transport.tls_insecure_skip_verify:
             ```
 
-??? faq "Why do we recommend to use docker-compose over Portainer?"
+??? faq "Why is docker-compose recommended over Portainer?"
 
     ##### Why is docker-compose recommended over Portainer? { #portainer }
 
