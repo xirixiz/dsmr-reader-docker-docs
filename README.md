@@ -1,4 +1,6 @@
-![dsmr reader docker](assets/icon.png){width=200 height=200}
+<p align="center">
+  <img src="assets/icon.png" alt="DSMR Reader Docker" width="150">
+</p>
 
 # Introduction
 
