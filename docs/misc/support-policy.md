@@ -1,61 +1,63 @@
 # Support Policy
 
-Any exceptions to this support policy will be clearly called out in the readme for the relevant image.
+Any exceptions to this support policy are explicitly documented in the README of the relevant image.
 
-## Formally Supported Image(s)
+## Formally Supported Images
 
-Any actively maintained image from the DSMR Reader organisations, is in scope for support. Note that if you are running an old version of an image we will likely ask you to upgrade to the latest version before providing support, unless your issue is version-specific.
+Any actively maintained image from the DSMR Reader organisations is considered in scope for support. When an outdated image version is in use, upgrading to the latest available version may be required before support is provided, unless the reported issue is specific to a particular version.
 
-This means that images, tags, and architectures that have been deprecated or archived are not in scope.
+Images, tags, and architectures that have been deprecated or archived are not considered in scope.
 
 ## Formally Supported Environments
 
-We build and test DSMR Reader Docker images using the latest stable branch of Docker CE using containerd and runc, on Linux, building for x86_64 (amd64) and aarch64 (arm64) architectures. Any matching client environment is in scope for support. In addition, any currently supported version of Docker CE and Podman is in scope.
+DSMR Reader Docker images are built and tested using the latest stable release of Docker CE with containerd and runc on Linux. Builds target the x86_64 (amd64) and aarch64 (arm64) architectures. Any client environment matching these characteristics is considered in scope for support. In addition, any currently supported version of Docker CE and Podman is considered supported.
 
-We support the use of both docker compose and the docker CLI to manage containers, though the former is preferred.
+Both docker compose and the Docker CLI are supported methods for managing containers, with docker compose being the preferred approach.
 
-We support the running of our containers on Unraid. We will not provide support for Unraid itself.
+Running containers on Unraid is supported. Support for Unraid itself is not provided.
 
 ## Reasonable Endeavours Support
 
-There are many alternative configurations that should broadly work for most of our images, but we make no guarantees to that effect, and expect that you have a solid understanding of the underlying technologies you're using. Although we do not formally support them, we will endeavour to provide help where we can with any of the following:
+Many alternative configurations are expected to work for most images, but no guarantees are provided. A solid understanding of the underlying technologies is assumed. While these configurations are not formally supported, reasonable efforts may be made to provide assistance in the following scenarios:
 
-* Use of DSMR Reader Docker images with alternative container runtimes
-* Use of locally built versions of DSMR Reader Docker
-* Docker Desktop on Windows, Mac, or Linux
-* Docker in Docker
-* Docker Swarm
-* Docker installed from distro repos (use the [official repos](https://docs.docker.com/engine/install/) instead)
-* Docker installed via Snap (use the [official repos](https://docs.docker.com/engine/install/) instead)
-* EOL versions of Docker (where there is no option to upgrade)
-* EOL versions of the Linux Kernel (where there is no option to upgrade)
-* EOL versions of your host linux distribution (where there is no option to upgrade)
-* Routing container traffic through a VPN
-* Use of macvlan/ipvlan networks
+- Use of DSMR Reader Docker images with alternative container runtimes
+- Use of locally built DSMR Reader Docker images
+- Docker Desktop on Windows, macOS, or Linux
+- Docker-in-Docker setups
+- Docker Swarm
+- Docker installations from distribution repositories (use of the [official repositories](https://docs.docker.com/engine/install/) is recommended)
+- Docker installations via Snap (use of the [official repositories](https://docs.docker.com/engine/install/) is recommended)
+- End-of-life versions of Docker where upgrading is not possible
+- End-of-life Linux kernel versions where upgrading is not possible
+- End-of-life host Linux distributions where upgrading is not possible
+- Routing container traffic through a VPN
+- Use of macvlan or ipvlan networking
 
 ## Unsupported
 
-The following configurations are entirely unsupported and we will not provide help with them, even if you have been able to get them to work:
+The following configurations are entirely unsupported, and assistance is not provided even if they appear to function:
 
-* Any forks of DSMR Reader Docker maintained by 3rd parties
-* Use of 3rd party guides or tutorials for configuring DSMR Reader Dokcer
-* Use of 3rd party management tools, such as Portainer, to create or update containers
-* Use of automated container update tools, such as Watchtower
-* Use of remote file storage, such as SMB or NFS, for container mounts
-* Use of LXC containers
-* Use of k8s or k3s
+- Forks of DSMR Reader Docker maintained by third parties
+- Use of third-party guides or tutorials for configuring DSMR Reader Docker
+- Use of third-party container management tools such as Portainer
+- Use of automated container update tools such as Watchtower
+- Use of remote file storage (for example SMB or NFS) for container mounts
+- Use of LXC containers
+- Use of Kubernetes, including k8s or k3s
 
-## Unsupported and Known To Be Broken
+## Unsupported and Known to Be Broken
 
-The following configurations are entirely unsupported and you are unlikely to be able to get them to work at all, or experience serious issues if you do:
+The following configurations are entirely unsupported and are known to cause severe issues or complete failure:
 
-* Use of a custom `init` for Docker
-* Overriding container entrypoints
+- Use of a custom `init` process for Docker
+- Overriding container entrypoints
 
-## Weird Exceptions
+## Conditional Exceptions
 
-The following configurations don't fit nicely into any single category because "it depends". They're not formally supported but we may provide reasonable endeavours support in some cases.
+The following configurations do not fall cleanly into a single category and are evaluated on a case-by-case basis. These configurations are not formally supported, but reasonable-endeavours assistance may be provided in some situations:
 
-* Running our containers with a root (`0`) `PUID` or `PGID`
-* Running our containers with a read-only container filesystem. Please [read the docs](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/read-only/).
-* Use of the `user` directive to run containers as a custom UID/GID. Please [read the docs](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/non-root/).
+- Running containers with a root (`0`) `PUID` or `PGID`
+- Running containers with a read-only container filesystem
+  See: https://xirixiz.github.io/dsmr-reader-docker-docs/misc/read-only/
+- Use of the `user` directive to run containers as a custom UID/GID
+  See: https://xirixiz.github.io/dsmr-reader-docker-docs/misc/non-root/

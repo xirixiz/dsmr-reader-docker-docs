@@ -1,10 +1,10 @@
 # Container Execution
 
-You may find at some point you need to view the internal data of a container.
+In some situations it is necessary to inspect or interact with the internal state of a running container.
 
 ## Shell Access
 
-Particularly useful when debugging the application - to shell in to one of our containers, run the following:
+Shell access is useful for debugging and inspection purposes. To open an interactive shell inside a running container, execute:
 
 ```shell
 docker exec -it <container_name> /bin/bash
@@ -12,28 +12,32 @@ docker exec -it <container_name> /bin/bash
 
 ## Tailing the logs
 
-The vast majority of our images are configured to output the application logs to the console, which in Docker's terms means you can access them using the `docker logs` command:
+Most images are configured to write application logs to standard output. These logs can be viewed using the docker logs command:
 
 ```shell
 docker logs -f --tail=<number_of_lines_to_start_with> <container_name>
 ```
 
-The `--tail` argument is optional, but useful if the application has been running for a long time - the `logs` command by default will output _all_ logs.
+The --tail argument is optional. When omitted, the command outputs all available logs, which may be excessive for long-running containers.
 
-To make life simpler for yourself here's a handy bash alias to do some of the leg work for you:
+For convenience, the following Bash alias can be used to simplify log access:
 
 ```shell
 # ~/.bash_aliases
 alias dtail='docker logs -tf --tail="50" "$@"'
 ```
 
-Execute it with `dtail <container_name>`.
+Logs can then be followed using:
+
+```shell
+dtail <container_name>
+```
 
 ## Checking the build version
 
-If you are experiencing issues, knowing exactly which image version your container is running helps us investigate more effectively. You may be reporting a problem that has already been identified and fixed in a newer release. If you are already running the latest version, it may indicate a newly discovered issue, which we would definitely like to investigate further.
+When investigating issues, identifying the exact image version in use is important. Problems may already be resolved in newer releases, or the observed behavior may indicate a newly introduced issue.
 
-To obtain the build version for the running container (f.e. 'dsmr'):
+To display version and build information for a running container (for example, dsmr):
 
 ```shell
 docker inspect -f '{{ with .Config.Labels -}}
@@ -43,16 +47,15 @@ OCI version:           {{ index . "org.opencontainers.image.version" }}
 Build date:            {{ index . "org.opencontainers.image.build_date" }}
 Revision:              {{ index . "org.opencontainers.image.revision" }}
 {{- end }}' <container_name>
-
 ```
 
-Or to obtain the build version for the running container (f.e. 'dsmr'), an alternative way:
+An alternative method to retrieve version information from the running container:
 
 ```shell
 docker exec -ti <container_name> bash -c 'cat /build_version'
 ```
 
-Or the image (f.e 'ghcr.io/xirixiz/dsmr-reader-docker'):
+To inspect version information directly from an image (for example, ghcr.io/xirixiz/dsmr-reader-docker):
 
 ```shell
 docker inspect -f '{{ with .Config.Labels -}}

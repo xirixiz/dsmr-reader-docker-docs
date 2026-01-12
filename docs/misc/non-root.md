@@ -1,34 +1,35 @@
 # Running Containers as a Non-Root User
 
 !!! warning
-    Running containers as a non-root user is an advanced topic and should only be attempted if you fully understand the implications described below.
+    Running containers as a non-root user is an advanced topic and should only be attempted after fully understanding the implications described below.
 
 ## What?
 
-In a typical setup, our images start with the container running as `root`. After initialization, privileges are dropped and the application services run as an unprivileged user named `app`. This approach was chosen because, at the time, using a fixed non-root user at build time would have limited the flexibility and configuration options we wanted to support.
+In a typical setup, the container starts with the main process running as `root`. After initialization, privileges are dropped and application services run as an unprivileged user named `app`. This design was chosen because, at the time of implementation, using a fixed non-root user at build time would have reduced flexibility and limited supported configuration options.
 
-While Docker now allows containers to run as an arbitrary user via the `--user` flag, our images were not originally designed with this model in mind and do not fully support it yet.
+Although Docker now supports running containers as an arbitrary user via the `--user` flag, the images were not originally designed around this model and do not fully support it.
 
-An alternative approach is to run [Docker itself in rootless mode](https://docs.docker.com/engine/security/rootless/). Rootless Docker uses separate user and network namespaces, meaning that even containers that appear to run as `root` do not have root-level access on the host. Running a container as a non-root user and running Docker rootless are different security models and are often incorrectly treated as equivalent.
+An alternative approach is to run Docker itself in [rootless mode](https://docs.docker.com/engine/security/rootless/). Rootless Docker uses separate user and network namespaces, meaning containers that appear to run as `root` do not have root-level access on the host. Running a container as a non-root user and running Docker rootless are distinct security models and should not be treated as equivalent.
 
 ## Why?
 
-Some people argue that a container running as `root` under any circumstances is an unacceptable security risk. This view often overstates the real container attack surface and misunderstands where the actual risks lie. That said, running containers as `root` can introduce risks depending on the environment.
+Some consider any container running as `root` to be an unacceptable security risk. This perspective often overestimates the practical container attack surface and misidentifies where the primary risks exist. Nevertheless, running containers as `root` can introduce risks depending on the environment.
 
-In general, the strongest approach is to run Docker itself in rootless mode, but this is not always practical or desirable. In those cases, running individual containers as an unprivileged user can still provide meaningful security benefits.
+In general, running Docker in rootless mode provides the strongest isolation model, but this is not always practical or desirable. In such cases, running individual containers as an unprivileged user can still offer meaningful security improvements.
 
-To put the risk into perspective, consider a container that is exposed to the internet and, due to misconfiguration, allows unauthenticated access. Even if an attacker discovers a remote code execution vulnerability and gains a shell inside the container, they typically start as an unprivileged application user. Without tools like sudo and with a minimal set of installed packages, escalating privileges inside the container is difficult. Even with `root` access inside the container, an attacker would still need a separate container escape vulnerability to impact the host beyond what is already possible through mounted volumes.
+To put the risk into perspective, consider a container exposed to the internet that allows unauthenticated access due to misconfiguration. Even if a remote code execution vulnerability is exploited and a shell is obtained inside the container, execution typically starts as an unprivileged application user. Without tools such as `sudo` and with a minimal set of installed packages, privilege escalation within the container is difficult. Even with `root` access inside the container, a separate container escape vulnerability would still be required to impact the host beyond what is already possible via mounted volumes.
 
-It is worth noting that some containers require additional Linux capabilities. In such cases, a compromised `root` user inside the container could potentially abuse those capabilities to affect the host, which is why privilege and capability requirements should always be carefully considered.
+Some containers require additional Linux capabilities. In such scenarios, a compromised `root` user inside the container could potentially abuse those capabilities to affect the host. For this reason, privilege and capability requirements should always be carefully evaluated.
 
 ## How?
-You can force Docker to start a container as a specific user by supplying a `UID` and `GID`:
+
+Docker can be instructed to start a container as a specific user by providing a UID and GID:
 
 ```bash
 docker run --user <uid>:<gid> …
 ```
 
-or in Docker Compose:
+Or when using Docker Compose:
 
 ```yaml
 services:
@@ -37,36 +38,36 @@ services:
     user: <uid>:<gid>
 ```
 
-When you do this, **the container runs entirely as that user**. This cannot be changed without recreating the container.
+When this approach is used, the container runs entirely as the specified user. This behavior cannot be changed without recreating the container.
 
-However, using `--user` is not a drop-in replacement for `PUID` and `PGID`.
+Using `--user` is not a drop-in replacement for `PUID` and `PGID`.
 
 ---
 
-## Why this is problematic for our images
+## Why this is problematic for these images
 
-Our images use **s6** as a process supervisor. s6, along with the startup logic of the image, expects to perform several operations that require root access during container initialization:
+These images use **s6** as a process supervisor. s6, together with the container startup logic, requires root access during initialization to perform several tasks:
 
 - Writing runtime files to `/run`
 - Creating or modifying users and groups in `/etc/passwd` and `/etc/group`
-- Adjusting ownership and permissions
+- Adjusting file ownership and permissions
 - Installing packages or extracting optional components
 - Allowing applications to write to their working directories
 
-When the container is started with `--user`, none of this can happen because the container never runs as root.
+When a container is started with `--user`, none of these operations are possible because the container never runs as `root`.
 
 ---
 
 ## Limitations when using `--user`
 
 - `PUID` and `PGID` are ignored
-  The container will always run using the UID and GID specified via `--user`.
+  The container always runs using the UID and GID specified via `--user`.
 
-- You must manage all filesystem permissions manually
-  Any mounted volumes or paths must already be writable by the specified UID and GID.
+- Filesystem permissions must be managed manually
+  All mounted volumes and paths must already be writable by the specified UID and GID.
 
-- `no-new-privileges=true` cannot be used safely by default
-  s6 requires `/run` to be writable by the user running the container. Without explicitly fixing permissions, the container will fail to start.
+- `no-new-privileges=true` cannot be enabled safely by default
+  s6 requires `/run` to be writable by the user running the container. Without explicitly correcting permissions, the container will fail to start.
 
 ---
 
@@ -86,7 +87,7 @@ services:
     restart: unless-stopped
 ```
 
-This setup will likely fail unless all required paths are already writable.
+This configuration is likely to fail unless all required paths are already writable by the specified user.
 
 ---
 
@@ -108,21 +109,16 @@ services:
       - no-new-privileges=true
 ```
 
-This explicitly fixes `/run` permissions so s6 can function, but **you are still responsible for all other permissions and compatibility issues**.
+This configuration explicitly fixes permissions for `/run` so that s6 can operate. Responsibility for all remaining permissions and compatibility concerns remains with the operator.
 
 ---
 
 ## Recommendation
 
-For these reasons, we **do not recommend switching existing containers to run as a non-root user** unless you fully understand the implications and have tested the setup thoroughly.
+For these reasons, switching existing containers to run as a non-root user is not recommended unless the implications are fully understood and the configuration has been thoroughly tested.
 
-For most users, using `PUID` and `PGID` provides the best balance of security, compatibility, and ease of use.
-
+For most use cases, configuring `PUID` and `PGID` provides an effective balance between security, compatibility, and ease of use.
 
 ## Support Policy
 
-Operation of our container image with a non-root user is supported on a Reasonable Endeavours basis. Please see our [Support Policy](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/support-policy) for more details.
-
-## Change History
-
-
+Operation of this container image as a non-root user is supported on a reasonable-endeavours basis. Refer to the [Support Policy](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/support-policy) for further details.
