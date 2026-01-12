@@ -1,4 +1,4 @@
-![dsmr reader docker]assets/icon.png){width=200 height=200}
+![dsmr reader docker](docs/assets/icon.png){width=200 height=200}
 
 # Introduction
 
