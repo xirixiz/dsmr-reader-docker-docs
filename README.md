@@ -1,3 +1,5 @@
+![dsmr reader docker]assets/icon.png){width=200 height=200}
+
 # Introduction
 
 This documentation provides information about the DSMR Reader Docker images. The goal is to ensure that each image is properly documented with relevant details to support setup, configuration, and operation. In addition to image-specific setup guides, the documentation also includes general information and best practices related to running the DSMR Reader Docker container.
@@ -17,3 +19,5 @@ Project communication and support primarily take place through Issues and Discus
 Although examples in the documentation use the `docker` command-line interface, Docker CE and Podman are considered the default and supported container runtimes. In most cases, commands can be translated directly between these runtimes with minimal or no changes. Same counts for `docker compose` and `podman compose`.
 
 Refer to the [Support Policy](https://xirixiz.github.io/dsmr-reader-docker-docs/misc/support-policy) for further details.
+
+
