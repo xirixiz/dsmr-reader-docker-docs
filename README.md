@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/icon.png" alt="DSMR Reader Docker" width="150">
-</p>
-
 # Introduction
 
 This documentation provides information about the DSMR Reader Docker images. The goal is to ensure that each image is properly documented with relevant details to support setup, configuration, and operation. In addition to image-specific setup guides, the documentation also includes general information and best practices related to running the DSMR Reader Docker container.
