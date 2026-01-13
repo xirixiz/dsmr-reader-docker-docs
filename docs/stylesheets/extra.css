@@ -6,8 +6,8 @@
 }
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
-  height: 30%;
-  width: 30%;
+  height: 80px; 
+  width: auto;
 }
 .md-typeset .admonition.faq,
 .md-typeset details.faq {
