@@ -1,3 +1,7 @@
+.md-header__button.md-logo img {
+  max-height: 100px;
+  width: auto;
+}
 .md-typeset .admonition.faq,
 .md-typeset details.faq {
     border-color: rgb(77, 77, 77);
@@ -17,9 +21,9 @@
 .md-typeset .faq > summary::before {
     visibility: hidden;
 }
-.swagger-ui .scheme-container, .swagger-ui select, .swagger-ui .opblock .opblock-section-header, .swagger-ui .opblock-body pre.microlight {
-    background: var(--md-default-bg-color) !important;
-}
-.swagger-ui * {
-    color: var(--md-typeset-color) !important;
-}
+#.swagger-ui .scheme-container, .swagger-ui select, .swagger-ui .opblock .opblock-section-header, .swagger-ui .opblock-body pre.microlight {
+#    background: var(--md-default-bg-color) !important;
+#}
+#.swagger-ui * {
+#    color: var(--md-typeset-color) !important;
+#}
