@@ -7,8 +7,8 @@ Complete installation instructions for DSMR Reader Docker.
 ## Prerequisites
 
 ### Required
-- Docker 20.x or newer (or Podman)
-- Docker Compose 1.27.0 or newer
+- Docker 24.0.0 or newer (or Podman)
+- Docker Compose 2.30.0 or newer
 - 2GB RAM minimum (4GB recommended)
 - 10GB disk space minimum
 - USB serial port or network-connected smart meter
