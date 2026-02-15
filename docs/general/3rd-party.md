@@ -64,10 +64,6 @@ Check plugin is loading:
 docker-compose logs dsmr | grep -i homewizard
 ```
 
-### Additional Documentation
-
-For detailed setup instructions, troubleshooting, and Homey integration examples, see [HOMEY_INTEGRATION.md](HOMEY_INTEGRATION.md).
-
 ### References
 
 - [Original GitHub Discussion](https://github.com/xirixiz/dsmr-reader-docker/issues/301)

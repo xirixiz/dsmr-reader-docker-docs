@@ -114,8 +114,6 @@ environment:
 ```
 
 ### Common Devices
-
-- **HomeWizard P1 meter** - See [HomeWizard Integration](HOMEY_INTEGRATION.md)
 - **Network serial adapters** - Transparent serial-to-TCP bridges
 - **Ser2net** - Linux serial port sharing
 

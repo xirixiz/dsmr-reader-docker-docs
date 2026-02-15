@@ -50,7 +50,7 @@ docker exec dsmr s6-rc -a list
    - Solution: Add `depends_on` in docker-compose
 
 2. **Missing environment variables** - Required variables not set
-   - Solution: Check [Configuration Reference](CONFIGURATION.md)
+   - Solution: Check [configuration](https://xirixiz.github.io/dsmr-reader-docker-docs/general/configuration)
 
 3. **Port conflict** - Port 80 already in use
    - Solution: Change port mapping (`"8080:80"`)
@@ -344,7 +344,6 @@ sudo ufw allow 80/tcp
 ### After Upgrade, Container Won't Start
 
 **Check breaking changes:**
-- Review [CHANGELOG](../CHANGELOG)
 - Check [GitHub releases](https://github.com/xirixiz/dsmr-reader-docker/releases)
 
 **Check database compatibility:**
@@ -353,7 +352,7 @@ sudo ufw allow 80/tcp
 docker exec dsmrdb psql -V
 ```
 
-**Restore from backup if needed** - See [Advanced Setup](ADVANCED_SETUP.md#backup-strategy)
+**Restore from backup if needed** - See [advanced](https://xirixiz.github.io/dsmr-reader-docker-docs/general/advanced)
 
 ---
 

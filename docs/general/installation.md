@@ -158,8 +158,6 @@ devices:
   - /dev/dsmr_p1:/dev/dsmr_p1
 ```
 
-See [USB Symlink Documentation](./HOST_DEVICE_SETUP.md) for details.
-
 #### Manual Permissions (Alternative)
 
 ```bash
@@ -175,7 +173,7 @@ sudo usermod -aG dialout $USER
 
 ## Network Smart Meter Setup
 
-For network-connected smart meters (HomeWizard P1, ser2net, etc):
+For network-connected smart meters:
 
 ```yaml
 services:
@@ -187,8 +185,6 @@ services:
       DSMRREADER_REMOTE_DATALOGGER_NETWORK_PORT: 23
       # ... other configuration ...
 ```
-
-See [HomeWizard Integration](HOMEY_INTEGRATION.md) for detailed setup.
 
 ---
 
