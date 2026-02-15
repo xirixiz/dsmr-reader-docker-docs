@@ -1,7 +1,10 @@
 title: How to
 nav:
-    - container-execution.md
-    - run-modes-and-variables.md
-    - understanding-puid-and-pgid.md
-    - split-dns.md
+    - quick-start.md
+    - installation.md
+    - configuration.md
+    - run-modes.md
+    - advanced.md
+    - 3rd-party.md
+    - troubleshooting.md
 

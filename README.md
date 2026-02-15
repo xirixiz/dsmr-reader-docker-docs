@@ -2,6 +2,8 @@
 
 This documentation provides information about the DSMR Reader Docker images. The goal is to ensure that each image is properly documented with relevant details to support setup, configuration, and operation. In addition to image-specific setup guides, the documentation also includes general information and best practices related to running the DSMR Reader Docker container.
 
+Jump to [quick start](https://xirixiz.github.io/dsmr-reader-docker-docs/general/quick-start).
+
 ## Contact and Project Resources
 
 Project communication and support primarily take place through Issues and Discussions on the respective source repositories.

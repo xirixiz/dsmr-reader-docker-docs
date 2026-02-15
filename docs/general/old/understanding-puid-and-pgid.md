@@ -20,7 +20,7 @@ Running applications as `root` is not ideal for everyday use. It increases the i
 
 Another common issue is file ownership on mounted volumes. When a container runs as `root`, any files or directories it creates on mapped host volumes will also be owned by `root`, which can make them difficult or impossible for the host user to manage without additional permission changes.
 
-To address this, our images support the use of `PUID` and `PGID`. These environment variables map the container’s internal application user to a specific user and group on the host system. This ensures that files created within mounted volumes are owned by the correct host user and that the container runs with the minimum privileges required.
+To address this, the DSMR Reader Docker image support the use of `PUID` and `PGID`. These environment variables map the container’s internal application user to a specific user and group on the host system. This ensures that files created within mounted volumes are owned by the correct host user and that the container runs with the minimum privileges required.
 
 The container is designed to use this model and should be configured with `PUID` and `PGID` accordingly.
 
