@@ -137,11 +137,11 @@ dmesg | tail -20
 
 #### Create Stable Symlink (Recommended)
 
-Use the [symlink script](../container_host_scripts/host_dev_setup.sh) for stable device names:
+Use the symlink script for stable device names:
 
 ```bash
 # Download script
-wget https://raw.githubusercontent.com/xirixiz/dsmr-reader-docker/development/container_host_scripts/host_dev_setup.sh
+wget https://raw.githubusercontent.com/xirixiz/dsmr-reader-docker/main/container_host_scripts/host_dev_setup.sh
 
 # Make executable
 chmod +x host_dev_preparation.sh
