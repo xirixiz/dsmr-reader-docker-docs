@@ -99,10 +99,6 @@ devices:
 
 ## HomeWizard P1 Meter Integration
 
-DSMR Reader can integrate with HomeWizard P1 meters to read smart meter data over your network instead of using a direct serial connection.
-
-### Quick Setup
-
 1. **Enable HomeWizard Local API** in the HomeWizard app
 
 2. **Create plugin file** `plugins/homewizard_p1.py`:
