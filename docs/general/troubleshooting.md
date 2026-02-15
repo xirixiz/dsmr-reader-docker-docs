@@ -8,11 +8,11 @@ Common issues and solutions for DSMR Reader Docker.
 
 ```bash
 # Check container status
-docker-compose ps
+docker compose ps
 
 # View container logs
-docker-compose logs dsmr
-docker-compose logs dsmrdb
+docker compose logs dsmr
+docker compose logs dsmrdb
 
 # Check s6-overlay services
 docker exec dsmr s6-rc -a list
@@ -28,7 +28,7 @@ docker exec dsmr python manage.py check --database default
 ### Check Logs
 
 ```bash
-docker-compose logs dsmr
+docker compose logs dsmr
 ```
 
 ### Enable Debug Mode
@@ -69,8 +69,8 @@ docker exec dsmr s6-rc -a list
 
 **Check database is running:**
 ```bash
-docker-compose ps dsmrdb
-docker-compose logs dsmrdb
+docker compose ps dsmrdb
+docker compose logs dsmrdb
 ```
 
 **Verify credentials match:**
@@ -89,7 +89,7 @@ docker exec dsmr psql -h $DJANGO_DATABASE_HOST \
 
 **Check database host:**
 ```yaml
-# For docker-compose on same host, use service name:
+# For docker compose on same host, use service name:
 DJANGO_DATABASE_HOST: dsmrdb
 
 # NOT localhost or 127.0.0.1
@@ -108,7 +108,7 @@ docker exec dsmr ps aux | grep nginx
 ### Check Port Mapping
 
 ```bash
-docker-compose ps
+docker compose ps
 # Verify port mapping shows: 0.0.0.0:80->80/tcp
 ```
 
@@ -214,8 +214,8 @@ docker exec dsmr ps aux | grep datalogger
 ### Check Datalogger Logs
 
 ```bash
-docker-compose logs dsmr | grep -i datalogger
-docker-compose logs dsmr | grep -i telegram
+docker compose logs dsmr | grep -i datalogger
+docker compose logs dsmr | grep -i telegram
 ```
 
 ### Verify Smart Meter Configuration
@@ -321,7 +321,7 @@ docker exec dsmr-remote env | grep API
 **Check server logs:**
 ```bash
 # On server
-docker-compose logs dsmr-server | grep -i api
+docker compose logs dsmr-server | grep -i api
 ```
 
 ### Data Not Appearing on Server
@@ -410,17 +410,17 @@ environment:
 
 ```bash
 # Container info
-docker-compose ps
-docker-compose logs dsmr > dsmr-logs.txt
-docker-compose logs dsmrdb > db-logs.txt
+docker compose ps
+docker compose logs dsmr > dsmr-logs.txt
+docker compose logs dsmrdb > db-logs.txt
 
 # System info
 docker version
-docker-compose version
+docker compose version
 uname -a
 
 # Configuration (remove sensitive data before sharing!)
-docker-compose config > config.yaml
+docker compose config > config.yaml
 ```
 
 ---

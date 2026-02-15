@@ -102,7 +102,7 @@ services:
 ### Step 5: Start Services
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Step 6: Access Web Interface
@@ -240,7 +240,7 @@ sudo apt-get update
 sudo apt-get upgrade
 
 # Install dependencies
-sudo apt-get install docker.io docker-compose git
+sudo apt-get install docker.io docker compose git
 ```
 
 **Recommended settings:**
@@ -336,7 +336,7 @@ devices:
 
 **Check containers are running:**
 ```bash
-docker-compose ps
+docker compose ps
 ```
 
 Expected output:
@@ -348,7 +348,7 @@ dsmrdb    postgres:17-alpine                 Up
 
 **Check logs:**
 ```bash
-docker-compose logs dsmr | tail -50
+docker compose logs dsmr | tail -50
 ```
 
 Should see:
@@ -373,7 +373,7 @@ Should return HTML page.
    - Serial port: `/dev/ttyUSB0` or `/dev/dsmr_p1`
    - Baud rate: `115200` (DSMR 4/5) or `9600` (DSMR 2/3)
 5. Save changes
-6. Restart container: `docker-compose restart dsmr`
+6. Restart container: `docker compose restart dsmr`
 
 ### Verify Data Collection
 
@@ -409,16 +409,16 @@ cp docker-compose.yaml docker-compose.yaml.backup
 
 ```bash
 # Stop services
-docker-compose down
+docker compose down
 
 # Pull latest image
-docker-compose pull
+docker compose pull
 
 # Start services
-docker-compose up -d
+docker compose up -d
 
 # Check logs
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ### Upgrade to Specific Version
@@ -431,9 +431,9 @@ services:
 
 Then:
 ```bash
-docker-compose down
-docker-compose pull
-docker-compose up -d
+docker compose down
+docker compose pull
+docker compose up -d
 ```
 
 ---
@@ -444,10 +444,10 @@ docker-compose up -d
 
 ```bash
 # Stop and remove containers
-docker-compose down
+docker compose down
 
 # Remove with volumes (deletes all data!)
-docker-compose down -v
+docker compose down -v
 
 # Remove images
 docker rmi xirixiz/dsmr-reader-docker:latest
@@ -511,8 +511,8 @@ ports:
 
 **Check logs:**
 ```bash
-docker-compose logs dsmr
-docker-compose logs dsmrdb
+docker compose logs dsmr
+docker compose logs dsmrdb
 ```
 
 **Enable debug mode:**

@@ -238,7 +238,7 @@ curl http://dsmr-server/healthcheck
 
 **Check logs:**
 ```bash
-docker-compose logs dsmr-remote
+docker compose logs dsmr-remote
 ```
 
 ### Server Not Receiving Data
@@ -256,5 +256,5 @@ sudo ufw allow 80/tcp
 
 **Check logs on server:**
 ```bash
-docker-compose logs dsmr-server | grep -i api
+docker compose logs dsmr-server | grep -i api
 ```

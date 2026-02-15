@@ -271,11 +271,11 @@ find ${BACKUP_DIR} -name "dsmr_*.sql" -mtime +7 -delete
 
 ```bash
 # Stop container
-docker-compose stop dsmr
+docker compose stop dsmr
 
 # Restore database
 cat backup.sql | docker exec -i dsmrdb psql -U dsmrreader -d dsmrreader
 
 # Start container
-docker-compose start dsmr
+docker compose start dsmr
 ```

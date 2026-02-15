@@ -41,7 +41,7 @@ services:
 
 Start it:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Access the web interface at `http://localhost` (login: `admin` / `admin`)
