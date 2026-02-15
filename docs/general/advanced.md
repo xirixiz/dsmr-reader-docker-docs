@@ -1,4 +1,4 @@
-# Advanced Setup
+# Advanced
 
 Advanced configuration options for production deployments.
 
