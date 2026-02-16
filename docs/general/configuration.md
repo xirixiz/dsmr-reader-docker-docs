@@ -2,6 +2,8 @@
 
 Complete reference for all environment variables supported by DSMR Reader Docker.
 
+[Official docs of DSMR Reader environment variables](https://dsmr-reader.readthedocs.io/en/v6/reference/environment-variables/)
+
 ---
 
 ## Container Configuration
