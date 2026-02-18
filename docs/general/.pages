@@ -1,10 +1,10 @@
 title: How to
 nav:
     - quick-start.md
+    - upgrade-guide.md
     - installation.md
     - configuration.md
     - run-modes.md
     - advanced.md
     - 3rd-party.md
     - troubleshooting.md
-
