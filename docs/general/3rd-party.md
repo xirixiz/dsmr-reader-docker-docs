@@ -2,106 +2,152 @@
 
 ## Raspberry Pi
 
-**Prerequisites:**
+### Prerequisites
+
 ```bash
 # Update system
 sudo apt-get update
 sudo apt-get upgrade
 
 # Install dependencies
-sudo apt-get install docker.io docker compose git
+sudo apt-get install docker.io docker-compose-plugin git
 ```
 
-**Recommended settings:**
+💡 Alternatively, install Docker via the official Docker repository for newer versions.
+
+---
+
+### Recommended settings
+
 ```yaml
 services:
   dsmr:
     # Use specific version for stability
     image: xirixiz/dsmr-reader-docker:6.2.0
 
-    # Limit resources on Raspberry Pi 3 or older
+    # Optional resource limits for older Pi models
     mem_limit: 512m
     cpus: 1.0
 ```
 
-**Storage consideration:**
-- Use external USB drive for database volume
-- SD cards wear out with database writes
+**Storage consideration**
+
+- Prefer an external USB drive for the database volume
+- SD cards wear out quickly with database workloads
+
+---
 
 ## Synology NAS
 
-**Install Docker package:**
-1. Open Package Center
-2. Install "Docker" package
-3. Install "Container Manager"
+### Install Container Manager
 
-**USB Serial driver:**
-Install `synokernel-usbserial` from Community Package Center
+1. Open **Package Center**
+2. Install **Container Manager** (or Docker on older DSM)
+3. Deploy your compose stack
 
-**Create stack via Container Manager:**
-- Copy docker-compose.yaml content
-- Adjust paths for Synology structure
+---
 
-**Serial device path:**
+### USB Serial driver
+
+Install **SynoKernel USB Serial Drivers** from SynoCommunity.
+
+⚠️ Compatibility depends on DSM version and NAS model.
+⚠️ On some DSM 7 systems USB serial support may be limited.
+
+---
+
+### Serial device path
+
 ```bash
 # Find device
 ls -l /dev/ttyUSB*
 
-# Set permissions
+# Temporary permission fix
 sudo chmod 666 /dev/ttyUSB0
 ```
 
+---
+
 ## Windows (Docker Desktop)
 
-**Prerequisites:**
+### Prerequisites
+
 - Windows 10/11 Pro, Enterprise, or Education
 - WSL2 enabled
-- Docker Desktop for Windows
+- Docker Desktop installed
 
-**Installation:**
-1. Install Docker Desktop
-2. Enable WSL2 backend
-3. Create project in WSL2 Linux distribution
+---
 
-**Serial device access:**
-- Direct USB passthrough not supported in WSL2
-- Options:
-  1. Use network smart meter (HomeWizard)
-  2. Use USB/IP forwarding
-  3. Run on native Linux instead
+### Notes on USB serial
+
+Direct USB passthrough is **not supported** in Docker Desktop.
+
+Options:
+
+1. Use network smart meter (recommended)
+2. Use USB/IP via `usbipd`
+3. Run DSMR Reader on native Linux
+
+---
 
 ## macOS
 
-**Prerequisites:**
-```bash
-# Install Docker Desktop for Mac
-# Download from: https://www.docker.com/products/docker-desktop
+### Install Docker Desktop
 
-# Or via Homebrew
+Download from:
+
+https://www.docker.com/products/docker-desktop
+
+Or via Homebrew:
+
+```bash
 brew install --cask docker
 ```
 
-**Serial device:**
-```bash
-# macOS devices appear as:
+---
+
+### Serial device
+
+macOS devices typically appear as:
+
+```
 /dev/cu.usbserial-*
 /dev/tty.usbserial-*
-
-# Use cu.* devices
-ls -l /dev/cu.*
 ```
 
-**docker-compose.yaml:**
+Prefer the `cu.*` devices.
+
+Example:
+
 ```yaml
 devices:
   - /dev/cu.usbserial-AB0IXYZ:/dev/ttyUSB0
 ```
 
-## HomeWizard P1 Meter Integration
+⚠️ USB passthrough depends on Docker Desktop access to the device and may not work on all systems.
 
-1. **Enable HomeWizard Local API** in the HomeWizard app
+---
 
-2. **Create plugin file** `plugins/homewizard_p1.py`:
+## HomeWizard P1 Meter (Advanced / Experimental)
+
+⚠️ This is an advanced workaround and not the recommended primary setup.
+Whenever possible, prefer:
+
+- direct USB
+- ser2net
+- P1 TCP gateway
+
+---
+
+### Enable HomeWizard Local API
+
+Enable the **Local API** in the HomeWizard app.
+
+---
+
+### Example plugin
+
+Create `plugins/homewizard_p1.py`:
 
 ```python
 import logging
@@ -110,7 +156,7 @@ from django.dispatch import receiver
 from dsmr_backend.signals import backend_called
 from dsmr_datalogger.services.datalogger import telegram_to_reading
 
-HOMEWIZARD_ENDPOINT = 'http://1.2.3.4:80/api/v1/telegram'  # Replace with your IP
+HOMEWIZARD_ENDPOINT = 'http://1.2.3.4:80/api/v1/telegram'  # adjust IP
 HOMEWIZARD_TIMEOUT = 5
 
 logger = logging.getLogger(__name__)
@@ -130,7 +176,9 @@ def handle_backend_called(**kwargs):
         logger.exception(f'HomeWizard plugin: failed to process telegram: {e}')
 ```
 
-3. **Update docker-compose.yaml**:
+---
+
+### Compose configuration
 
 ```yaml
 services:
@@ -139,25 +187,21 @@ services:
     volumes:
       - ./plugins/homewizard_p1.py:/app/dsmr_plugins/modules/homewizard_p1.py:ro
     environment:
-      CONTAINER_RUN_MODE: server_remote_datalogger
+      CONTAINER_RUN_MODE: standalone
       DSMRREADER_PLUGINS: dsmr_plugins.modules.homewizard_p1
-      # ... other environment variables ...
 ```
 
-4. **Restart containers**:
-
-```bash
-docker compose down && docker compose up -d
-```
+---
 
 ### Verification
 
-Check plugin is loading:
 ```bash
 docker compose logs dsmr | grep -i homewizard
 ```
 
+---
+
 ### References
 
-- [Original GitHub Discussion](https://github.com/xirixiz/dsmr-reader-docker/issues/301)
-- [Home Assistant Alternative](https://community.home-assistant.io/t/dsmr-reader-docker-and-homewizard-p1-meter-integration/747265)
+- Original discussion: https://github.com/xirixiz/dsmr-reader-docker/issues/301
+- HomeWizard API: https://api-documentation.homewizard.com/docs/v1/telegram/

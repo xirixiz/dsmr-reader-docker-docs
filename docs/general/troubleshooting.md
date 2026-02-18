@@ -14,46 +14,46 @@ docker compose ps
 docker compose logs dsmr
 docker compose logs dsmrdb
 
-# Check s6-overlay services
+# Check s6 overlay services
 docker exec dsmr s6-rc -a list
 
-# Test database connection
-docker exec dsmr python manage.py check --database default
+# Test Django database connectivity
+docker exec dsmr /opt/venv/bin/python /app/manage.py check --database default
 ```
 
 ---
 
 ## Container Won't Start
 
-### Check Logs
+### Check logs
 
 ```bash
 docker compose logs dsmr
 ```
 
-### Enable Debug Mode
+### Enable debug mode
 
 ```yaml
 environment:
   CONTAINER_ENABLE_DEBUG: "true"
 ```
 
-### Check Service Status
+### Check service status
 
 ```bash
 docker exec dsmr s6-rc -a list
 ```
 
-### Common Causes
+### Common causes
 
-1. **Database not ready** - Container starts before database is ready
-   - Solution: Add `depends_on` in docker-compose
+1. Database not ready: container starts before Postgres is accepting connections
+   Solution: ensure Postgres is in the same compose file and DSMR uses the service name as host, for example `DJANGO_DATABASE_HOST: dsmrdb`
 
-2. **Missing environment variables** - Required variables not set
-   - Solution: Check [configuration](https://xirixiz.github.io/dsmr-reader-docker-docs/general/configuration)
+2. Missing environment variables: required variables not set
+   Solution: verify your configuration reference
 
-3. **Port conflict** - Port 80 already in use
-   - Solution: Change port mapping (`"8080:80"`)
+3. Port conflict: host port already in use
+   Solution: change port mapping, for example `7777:80`
 
 ---
 
@@ -61,111 +61,121 @@ docker exec dsmr s6-rc -a list
 
 ### Symptoms
 
-- Container starts but web interface shows errors
-- "Connection refused" in logs
-- "FATAL: database does not exist"
+* Web interface shows database errors
+* Connection refused in logs
+* FATAL: database does not exist
 
 ### Solutions
 
-**Check database is running:**
+Check database is running:
+
 ```bash
 docker compose ps dsmrdb
 docker compose logs dsmrdb
 ```
 
-**Verify credentials match:**
-```bash
-# In docker-compose.yaml, ensure these match:
-# - POSTGRES_USER / DJANGO_DATABASE_USER
-# - POSTGRES_PASSWORD / DJANGO_DATABASE_PASSWORD
-# - POSTGRES_DB / DJANGO_DATABASE_NAME
+Verify credentials match:
+
+```text
+POSTGRES_USER matches DJANGO_DATABASE_USER
+POSTGRES_PASSWORD matches DJANGO_DATABASE_PASSWORD
+POSTGRES_DB matches DJANGO_DATABASE_NAME
 ```
 
-**Test connection from container:**
+Test connection from the DSMR container:
+
 ```bash
-docker exec dsmr psql -h $DJANGO_DATABASE_HOST \
-  -U $DJANGO_DATABASE_USER -d $DJANGO_DATABASE_NAME
+docker exec -e PGPASSWORD="$DJANGO_DATABASE_PASSWORD" dsmr \
+  psql -h "$DJANGO_DATABASE_HOST" -U "$DJANGO_DATABASE_USER" -d "$DJANGO_DATABASE_NAME"
 ```
 
-**Check database host:**
+Check database host:
+
 ```yaml
-# For docker compose on same host, use service name:
+# For Docker Compose on the same host, use the service name
 DJANGO_DATABASE_HOST: dsmrdb
 
-# NOT localhost or 127.0.0.1
+# Do not use localhost or 127.0.0.1 for the database host
 ```
 
 ---
 
 ## Web Interface Not Accessible
 
-### Check nginx is Running
+### Check nginx and gunicorn are running
 
 ```bash
-docker exec dsmr ps aux | grep nginx
+docker exec dsmr ps aux | grep -E "nginx|gunicorn"
 ```
 
-### Check Port Mapping
+### Check port mapping
 
 ```bash
 docker compose ps
-# Verify port mapping shows: 0.0.0.0:80->80/tcp
 ```
 
-### Enable nginx Access Logs
+If port 80 is in use, map a different host port:
+
+```yaml
+ports:
+  - "7777:80"
+```
+
+### Nginx access logs and error logs
+
+This image writes nginx logs to container stdout and stderr. You can view them with:
+
+```bash
+docker compose logs -f dsmr
+```
+
+If you want access logs enabled:
 
 ```yaml
 environment:
   CONTAINER_ENABLE_NGINX_ACCESS_LOGS: "true"
 ```
 
-Then check:
-```bash
-docker exec dsmr tail -f /var/log/nginx/access.log
-docker exec dsmr tail -f /var/log/nginx/error.log
-```
-
-### Test nginx Configuration
+### Test nginx configuration
 
 ```bash
-docker exec dsmr nginx -t
+docker exec dsmr nginx -c /etc/nginx/nginx.conf -t
 ```
 
 ---
 
 ## Serial Device Not Accessible
 
-### Check Device Exists
+### Check device exists on the host
 
 ```bash
 ls -l /dev/ttyUSB0
 ```
 
-### Check Permissions
+### Check permissions
 
 ```bash
-# Should show: crw-rw---- 1 root dialout
 ls -l /dev/ttyUSB0
 
-# Fix permissions (temporary):
+# Temporary fix
 sudo chmod 666 /dev/ttyUSB0
 ```
 
-### Add User to dialout Group
+### Add your user to dialout group
 
 ```bash
-sudo usermod -aG dialout $USER
+sudo usermod -aG dialout "$USER"
 # Log out and back in
 ```
 
-### Verify Device is Passed to Container
+### Verify device is passed to the container
 
 ```yaml
 devices:
   - /dev/ttyUSB0:/dev/ttyUSB0
 ```
 
-### Check Inside Container
+Check inside the container:
 
 ```bash
 docker exec dsmr ls -l /dev/ttyUSB0
@@ -175,102 +185,82 @@ docker exec dsmr ls -l /dev/ttyUSB0
 
 ## Timestamp Issues
 
-### Timestamps Off by One Hour
+### Timestamps off by one hour
 
-**❌ WRONG - Do NOT do this:**
-```yaml
-volumes:
-  - /etc/localtime:/etc/localtime:ro
-```
+Do not mount host localtime into the container. Use timezone env var:
 
-This causes timezone conflicts with PostgreSQL.
-
-**✅ CORRECT - Use environment variable:**
 ```yaml
 environment:
   DJANGO_TIME_ZONE: Europe/Amsterdam
 ```
 
-### Verify Timezone
+Verify time:
 
 ```bash
-# Check container timezone
 docker exec dsmr date
-
-# Check database timezone
 docker exec dsmrdb psql -U dsmrreader -d dsmrreader -c "SHOW TIME ZONE;"
 ```
 
 ---
 
-## Data Not Showing / No Readings
+## Data Not Showing or No Readings
 
-### Check Datalogger is Running
-
-```bash
-docker exec dsmr ps aux | grep datalogger
-```
-
-### Check Datalogger Logs
+### Check datalogger activity
 
 ```bash
 docker compose logs dsmr | grep -i datalogger
 docker compose logs dsmr | grep -i telegram
 ```
 
-### Verify Smart Meter Configuration
+### Verify datalogger configuration in the UI
 
-Access web interface → Configuration → Datalogger settings
+Web interface then Configuration then Datalogger
 
 Common settings:
-- **DSMR version** - Set to your meter version (4.x or 5.x)
-- **Serial port** - `/dev/ttyUSB0`
-- **Baud rate** - 115200 (DSMR 4/5) or 9600 (DSMR 2/3)
 
-### Test Serial Connection Manually
+* DSMR version: set to your meter version
+* Serial port: `/dev/ttyUSB0` or `/dev/dsmr_p1`
+* Baud rate: 115200 for DSMR 4 or 5, 9600 for DSMR 2 or 3
+
+### Test serial connection manually
 
 ```bash
-# Inside container
 docker exec -it dsmr bash
-
-# Read raw data from serial port
 cat /dev/ttyUSB0
-# Should show telegram data every 10 seconds
-# Press Ctrl+C to stop
 ```
+
+You should see telegram data periodically. Press Ctrl C to stop.
 
 ---
 
 ## Performance Issues
 
-### Slow Web Interface
+### Slow web interface
 
-**Check database size:**
+Check database size:
+
 ```bash
 docker exec dsmrdb psql -U dsmrreader -d dsmrreader \
   -c "SELECT pg_size_pretty(pg_database_size('dsmrreader'));"
 ```
 
-**Enable vacuum on startup:**
+Enable vacuum on startup:
+
 ```yaml
 environment:
   CONTAINER_ENABLE_VACUUM_DB_AT_STARTUP: "true"
 ```
 
-**Or run vacuum manually:**
+Or run vacuum manually:
+
 ```bash
 docker exec dsmr /app/cleandb.sh -v
 ```
 
-### High CPU Usage
+### High CPU usage
 
-**Check for stuck processes:**
 ```bash
 docker exec dsmr ps aux
-```
-
-**Check container resource limits:**
-```bash
 docker stats dsmr dsmrdb
 ```
 
@@ -278,158 +268,143 @@ docker stats dsmr dsmrdb
 
 ## SSL Certificate Errors
 
-### Verify Certificates are Mounted
+This image expects certificates at:
+
+* `/etc/ssl/private/fullchain.pem`
+* `/etc/ssl/private/privkey.pem`
+
+Verify certificates are mounted:
 
 ```bash
-docker exec dsmr ls -la /etc/nginx/ssl/
+docker exec dsmr ls -la /etc/ssl/private/
 ```
 
-Should show:
-- `/etc/nginx/ssl/certificate.crt`
-- `/etc/nginx/ssl/private.key`
-
-### Test nginx Configuration
+Test nginx configuration:
 
 ```bash
-docker exec dsmr nginx -t
+docker exec dsmr nginx -c /etc/nginx/nginx.conf -t
 ```
 
-### Check Certificate Validity
+Check certificate validity:
 
 ```bash
-docker exec dsmr openssl x509 -in /etc/nginx/ssl/certificate.crt -text -noout
+docker exec dsmr openssl x509 -in /etc/ssl/private/fullchain.pem -text -noout
 ```
 
 ---
 
-## Remote Datalogger Issues
+## Remote Datalogger and Remote Input Issues
 
-### Can't Connect to Server
+There are two different scenarios.
 
-**Test network connectivity:**
+### Remote input pull
+
+DSMR Reader reads from a remote TCP source like ser2net or a P1 TCP gateway.
+
+Check connectivity from the DSMR container:
+
 ```bash
-# From remote location
-curl http://dsmr-server/healthcheck
+docker exec dsmr sh -c "nc -zv 192.168.1.100 23"
 ```
 
-**Check API key:**
+Verify env vars:
+
 ```bash
-# View configured API hosts/keys
-docker exec dsmr-remote env | grep API
+docker exec dsmr env | grep DSMRREADER_REMOTE_DATALOGGER_
 ```
 
-**Check server logs:**
+### Remote datalogger push
+
+A separate forwarder container reads the meter and pushes telegrams to the server via API.
+
+Test server reachability from the forwarder:
+
 ```bash
-# On server
+docker exec dsmr-remote curl -fsS http://dsmr-server/healthcheck >/dev/null
+```
+
+Check forwarder env vars:
+
+```bash
+docker exec dsmr-remote env | grep DSMRREADER_REMOTE_DATALOGGER_API_
+```
+
+Check server logs for API activity:
+
+```bash
 docker compose logs dsmr-server | grep -i api
-```
-
-### Data Not Appearing on Server
-
-**Verify API is enabled on server:**
-- Access server web interface
-- Settings → API → Verify enabled
-
-**Check firewall:**
-```bash
-# On server
-sudo ufw status
-sudo ufw allow 80/tcp
 ```
 
 ---
 
 ## Container Upgrade Issues
 
-### After Upgrade, Container Won't Start
+### After upgrade, container will not start
 
-**Check breaking changes:**
-- Check [GitHub releases](https://github.com/xirixiz/dsmr-reader-docker/releases)
+Check breaking changes:
 
-**Check database compatibility:**
+```text
+Review GitHub releases for this image and upstream DSMR Reader
+```
+
+Check database version:
+
 ```bash
-# View database version
 docker exec dsmrdb psql -V
 ```
 
-**Restore from backup if needed** - See [advanced](https://xirixiz.github.io/dsmr-reader-docker-docs/general/advanced)
+Restore from backup if needed, see Advanced section.
 
 ---
 
-## Platform-Specific Issues
+## Platform Specific Issues
 
 ### Raspberry Pi
 
-**libseccomp2 version too old:**
+If you see Y2038 or libseccomp related errors, update your host packages. The exact steps depend on your Pi OS version.
 
-```bash
-# Add backports repository
-sudo apt-key adv --keyserver keyserver.ubuntu.com \
-  --recv-keys 04EE7237B7D453EC 648ACFD622F3D138
-
-echo 'deb http://httpredir.debian.org/debian buster-backports main contrib non-free' | \
-  sudo tee -a /etc/apt/sources.list.d/debian-backports.list
-
-# Update and install
-sudo apt update
-sudo apt install libseccomp2 -t buster-backports
-```
+---
 
 ### Synology NAS
 
-**USB serial not accessible:**
+USB serial support depends on DSM version and model. If `/dev/ttyUSB0` is missing, verify the driver situation on the host first.
 
-Install `synokernel-usbserial` from Synology Community Package Center.
-
-**Set device permissions:**
-```bash
-sudo chmod 666 /dev/ttyUSB0
-```
+---
 
 ### WSL2
 
-**USB devices not accessible:**
-
-WSL2 doesn't have native USB support. Options:
-1. Use USB/IP forwarding
-2. Run on Windows Docker Desktop
-3. Use network smart meter instead
+USB devices are not natively accessible. Prefer network smart meter or USB IP forwarding.
 
 ---
 
 ## Getting More Help
 
-### Enable Debug Logging
+### Enable debug logging
 
 ```yaml
 environment:
   CONTAINER_ENABLE_DEBUG: "true"
 ```
 
-### Collect Diagnostic Information
+### Collect diagnostic information
 
 ```bash
-# Container info
 docker compose ps
 docker compose logs dsmr > dsmr-logs.txt
 docker compose logs dsmrdb > db-logs.txt
 
-# System info
 docker version
 docker compose version
 uname -a
 
-# Configuration (remove sensitive data before sharing!)
+# Remove sensitive values before sharing
 docker compose config > config.yaml
 ```
 
----
+### Links
 
-## Need Additional Help?
-**Search issues** - [GitHub Issues](https://github.com/xirixiz/dsmr-reader-docker/issues)
-**Ask community** - [GitHub Discussions](https://github.com/xirixiz/dsmr-reader-docker/discussions)
-
-**Upstream docs** - [DSMR Reader Documentation](https://dsmr-reader.readthedocs.io/)
-**Upstream search issues** - [GitHub Issues](https://github.com/dsmrreader/dsmr-reader/issues)
-**Upstream ask community** - [GitHub Discussions](https://github.com/dsmrreader/dsmr-reader/discussions)
----
+* [GitHub issues for this image](https://github.com/xirixiz/dsmr-reader-docker/issues)
+* [GitHub discussions for this image](https://github.com/xirixiz/dsmr-reader-docker/discussions)
+* [Upstream DSMR Reader documentation](https://dsmr-reader.readthedocs.io/)
+* [Upstream DSMR Reader issues](https://github.com/dsmrreader/dsmr-reader/issues)
+* [Upstream DSMR Reader discussions](https://github.com/dsmrreader/dsmr-reader/discussions)

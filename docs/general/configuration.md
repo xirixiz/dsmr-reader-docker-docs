@@ -27,65 +27,70 @@ Container-specific settings that control Docker container behavior.
 
 ## Database Configuration
 
-PostgreSQL connection settings (all required).
+PostgreSQL connection settings (**required for `standalone` and `server_remote_datalogger`**).
 
-| Variable                    | Default        | Description                                                      |
-|-----------------------------|----------------|------------------------------------------------------------------|
-| `DJANGO_DATABASE_HOST`      | -              | PostgreSQL hostname                                              |
-| `DJANGO_DATABASE_PORT`      | `5432`         | PostgreSQL port                                                  |
-| `DJANGO_DATABASE_NAME`      | `dsmrreader`   | Database name                                                    |
-| `DJANGO_DATABASE_USER`      | `dsmrreader`   | Database username                                                |
-| `DJANGO_DATABASE_PASSWORD`  | `dsmrreader`   | Database password                                                |
+| Variable                    | Default        | Description |
+|----------------------------|----------------|-------------|
+| `DJANGO_DATABASE_HOST`     | -              | PostgreSQL hostname |
+| `DJANGO_DATABASE_PORT`     | `5432`         | PostgreSQL port |
+| `DJANGO_DATABASE_NAME`     | `dsmrreader`   | Database name |
+| `DJANGO_DATABASE_USER`     | `dsmrreader`   | Database username |
+| `DJANGO_DATABASE_PASSWORD` | `dsmrreader`   | Database password |
 
 ---
 
 ## Application Configuration
 
-Core DSMR Reader settings (all required).
+Core DSMR Reader settings (**required for `standalone` and `server_remote_datalogger`**).
 
-| Variable                    | Default        | Description                                                      |
-|-----------------------------|----------------|------------------------------------------------------------------|
-| `DJANGO_SECRET_KEY`         | `dsmrreader`   | Django secret key (generate secure random string)                |
-| `DSMRREADER_ADMIN_USER`     | `admin`        | Admin username                                                   |
-| `DSMRREADER_ADMIN_PASSWORD` | `admin`        | Admin password                                                   |
+| Variable                     | Default      | Description |
+|-----------------------------|--------------|-------------|
+| `DJANGO_SECRET_KEY`         | `dsmrreader` | Django secret key (use a secure random string) |
+| `DSMRREADER_ADMIN_USER`     | `admin`      | Admin username |
+| `DSMRREADER_ADMIN_PASSWORD` | `admin`      | Admin password |
 
 ---
 
-## Remote Datalogger Configuration
+## Remote Input and Remote Datalogger Configuration
 
-Required only when `CONTAINER_RUN_MODE=remote_datalogger`.
+The `DSMRREADER_REMOTE_DATALOGGER_*` variables are used in two different ways:
 
-### API Settings
+- **Remote input (pull)**: DSMR Reader reads from a remote source (ser2net, TCP gateway, telnet).
+  Allowed in `standalone` (and optionally in `server_remote_datalogger` if supported by your setup).
+- **Remote forwarder (push)**: a separate remote datalogger container reads the meter and pushes telegrams via API.
+  Used only when `CONTAINER_RUN_MODE=remote_datalogger`.
 
-| Variable                                 | Required       | Description                                                      |
-|------------------------------------------|----------------|------------------------------------------------------------------|
-| `DSMRREADER_REMOTE_DATALOGGER_API_HOSTS` | Yes            | Comma-separated server URLs                                      |
-| `DSMRREADER_REMOTE_DATALOGGER_API_KEYS`  | Yes            | Comma-separated API keys                                         |
+### Remote Input Settings (Pull)
 
-### Input Method
+These settings control where DSMR Reader reads telegrams from.
 
-| Variable                                   | Default        | Description                                                      |
-|--------------------------------------------|----------------|------------------------------------------------------------------|
-| `DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD`| `serial`       | Input method: `serial` or `ipv4`                                 |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD` | `serial` | Input method: `serial` or `ipv4` |
 
-### Serial Configuration
+#### Serial Input (`serial`)
 
-For `DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD=serial`:
+| Variable                                        | Required | Description |
+|-------------------------------------------------|----------|-------------|
+| `DSMRREADER_REMOTE_DATALOGGER_SERIAL_DEVICE`    | Yes      | Device path (e.g. `/dev/ttyUSB0`) |
+| `DSMRREADER_REMOTE_DATALOGGER_SERIAL_BAUDRATE`  | Yes      | Baud rate (e.g. `115200`) |
+| `DSMRREADER_REMOTE_DATALOGGER_SERIAL_BYTESIZE`  | Yes      | Byte size (typically `8`) |
 
-| Variable                                     | Required       | Description                                                      |
-|----------------------------------------------|----------------|------------------------------------------------------------------|
-| `DSMRREADER_REMOTE_DATALOGGER_SERIAL_DEVICE` | Yes            | Device path (e.g., `/dev/ttyUSB0`)                               |
-| `DSMRREADER_REMOTE_DATALOGGER_SERIAL_BAUDRATE`| Yes           | Baud rate (e.g., `115200`)                                       |
-| `DSMRREADER_REMOTE_DATALOGGER_SERIAL_BYTESIZE`| Yes           | Byte size (typically `8`)                                        |
+#### Network Input (`ipv4`)
 
-### Network Configuration
+| Variable                                        | Required | Description |
+|-------------------------------------------------|----------|-------------|
+| `DSMRREADER_REMOTE_DATALOGGER_NETWORK_HOST`     | Yes      | Smart meter IP or hostname |
+| `DSMRREADER_REMOTE_DATALOGGER_NETWORK_PORT`     | Yes      | Smart meter TCP port |
 
-For `DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD=ipv4`:
+### Remote Forwarder API Settings (Push)
 
-| Variable                                       | Required       | Description                                                      |
-|------------------------------------------------|----------------|------------------------------------------------------------------|
-| `DSMRREADER_REMOTE_DATALOGGER_NETWORK_HOST`    | Yes            | Smart meter IP or hostname                                       |
-| `DSMRREADER_REMOTE_DATALOGGER_NETWORK_PORT`    | Yes            | Smart meter TCP port                                             |
+Required only when `CONTAINER_RUN_MODE=remote_datalogger` (forwarder container).
+
+| Variable                                 | Required | Description |
+|------------------------------------------|----------|-------------|
+| `DSMRREADER_REMOTE_DATALOGGER_API_HOSTS` | Yes      | Comma-separated server URLs |
+| `DSMRREADER_REMOTE_DATALOGGER_API_KEYS`  | Yes      | Comma-separated API keys |
 
 ---
 
@@ -95,11 +100,11 @@ DSMR Reader supports many additional environment variables. See the [upstream do
 
 Common examples:
 
-| Variable                                      | Default        | Description                                                      |
-|-----------------------------------------------|----------------|------------------------------------------------------------------|
-| `DSMRREADER_LOGLEVEL`                         | -              | Logging level (DEBUG, INFO, WARNING, ERROR)                      |
-| `DSMRREADER_PLUGINS`                          | -              | Comma-separated plugin modules                                   |
-| `DSMRREADER_SUPPRESS_STORAGE_SIZE_WARNINGS`   | -              | Suppress disk space warnings                                     |
+| Variable                                    | Default | Description |
+|---------------------------------------------|---------|-------------|
+| `DSMRREADER_LOGLEVEL`                       | -       | Logging level (DEBUG, INFO, WARNING, ERROR) |
+| `DSMRREADER_PLUGINS`                        | -       | Comma-separated plugin modules |
+| `DSMRREADER_SUPPRESS_STORAGE_SIZE_WARNINGS` | -       | Suppress disk space warnings |
 
 ---
 
@@ -109,6 +114,7 @@ Common examples:
 
 ```yaml
 environment:
+  CONTAINER_RUN_MODE: standalone
   DJANGO_DATABASE_HOST: dsmrdb
   DJANGO_DATABASE_NAME: dsmrreader
   DJANGO_DATABASE_USER: dsmrreader

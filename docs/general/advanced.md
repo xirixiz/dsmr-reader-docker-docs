@@ -13,7 +13,7 @@ Enable HTTPS for secure access to DSMR Reader.
 **Self-signed (testing only):**
 ```bash
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout private.key -out certificate.crt \
+  -keyout privkey.pem -out fullchain.pem \
   -subj "/CN=dsmr.local"
 ```
 
@@ -22,7 +22,13 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 certbot certonly --standalone -d dsmr.example.com
 ```
 
+---
+
 ### Configure Container
+
+> The container expects certificates at:
+> - `/etc/ssl/private/fullchain.pem`
+> - `/etc/ssl/private/privkey.pem`
 
 ```yaml
 services:
@@ -30,10 +36,10 @@ services:
     image: xirixiz/dsmr-reader-docker:latest
     ports:
       - "443:443"
-      - "80:80"  # Optional HTTP redirect
+      - "80:80" # optional
     volumes:
-      - ./certs/certificate.crt:/etc/nginx/ssl/certificate.crt:ro
-      - ./certs/private.key:/etc/nginx/ssl/private.key:ro
+      - ./certs/fullchain.pem:/etc/ssl/private/fullchain.pem:ro
+      - ./certs/privkey.pem:/etc/ssl/private/privkey.pem:ro
     environment:
       CONTAINER_ENABLE_NGINX_SSL: "true"
 ```
@@ -44,28 +50,13 @@ services:
 
 Protect the web interface with username/password.
 
-### Create Password File
-
-```bash
-# Install htpasswd utility
-apt-get install apache2-utils  # Debian/Ubuntu
-yum install httpd-tools         # RHEL/CentOS
-
-# Create password file
-htpasswd -c htpasswd username
-# Enter password when prompted
-```
-
-### Configure Container
+> The container automatically generates the htpasswd file.
 
 ```yaml
-services:
-  dsmr:
-    image: xirixiz/dsmr-reader-docker:latest
-    volumes:
-      - ./htpasswd:/etc/nginx/.htpasswd:ro
-    environment:
-      CONTAINER_ENABLE_HTTP_AUTH: "true"
+environment:
+  CONTAINER_ENABLE_HTTP_AUTH: "true"
+  HTTP_AUTH_USERNAME: "username"
+  HTTP_AUTH_PASSWORD: "change-me"
 ```
 
 ---
@@ -74,11 +65,16 @@ services:
 
 Mutual TLS authentication using client certificates.
 
-### Certificate Setup
+### Requirements
 
-1. **Create CA certificate** (one-time)
-2. **Create server certificate** (signed by CA)
-3. **Create client certificates** (signed by CA, one per user)
+Mount your CA certificate to:
+
+- `/etc/nginx/client_cert/cacert.pem`
+Optional CRL:
+
+- `/etc/nginx/client_cert/ca.crl`
+
+---
 
 ### Configure Container
 
@@ -86,10 +82,14 @@ Mutual TLS authentication using client certificates.
 services:
   dsmr:
     image: xirixiz/dsmr-reader-docker:latest
+    ports:
+      - "443:443"
     volumes:
-      - ./certs/ca.crt:/etc/nginx/ssl/ca.crt:ro
-      - ./certs/server.crt:/etc/nginx/ssl/certificate.crt:ro
-      - ./certs/server.key:/etc/nginx/ssl/private.key:ro
+      - ./certs/fullchain.pem:/etc/ssl/private/fullchain.pem:ro
+      - ./certs/privkey.pem:/etc/ssl/private/privkey.pem:ro
+      - ./client-ca/cacert.pem:/etc/nginx/client_cert/cacert.pem:ro
+      # optional:
+      # - ./client-ca/ca.crl:/etc/nginx/client_cert/ca.crl:ro
     environment:
       CONTAINER_ENABLE_NGINX_SSL: "true"
       CONTAINER_ENABLE_CLIENTCERT_AUTH: "true"
@@ -99,23 +99,34 @@ services:
 
 ---
 
-## Network Smart Meters
+## Network Smart Meters (Pull)
 
 Read smart meters via TCP/IP instead of USB serial.
 
+✅ Works in `standalone`
+✅ Works in `server_remote_datalogger`
+❌ Does NOT require `remote_datalogger` mode
+❌ Does NOT require API keys
+
+---
+
 ### Configuration
-- **Remote datalogger settings** - See [DSMRREADER_REMOTE_DATALOGGER_* env vars in DSMR-reader](https://dsmr-reader.readthedocs.io/en/v6/reference/environment-variables/#dsmr-reader-remote-datalogger-settings)
 
 ```yaml
 environment:
+  CONTAINER_RUN_MODE: standalone
   DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD: ipv4
   DSMRREADER_REMOTE_DATALOGGER_NETWORK_HOST: 192.168.1.100
   DSMRREADER_REMOTE_DATALOGGER_NETWORK_PORT: 23
 ```
 
+---
+
 ### Common Devices
-- **Network serial adapters** - Transparent serial-to-TCP bridges
-- **Ser2net** - Linux serial port sharing
+
+- Network serial adapters
+- ser2net
+- P1 TCP gateways
 
 ---
 
@@ -128,7 +139,7 @@ environment:
   CONTAINER_ENABLE_IFRAME: "true"
 ```
 
-**Security note:** Only enable on trusted networks.
+⚠️ Only enable on trusted networks.
 
 ---
 
@@ -143,17 +154,18 @@ environment:
   CONTAINER_ENABLE_VACUUM_DB_AT_STARTUP: "true"
 ```
 
-**Note:** Increases startup time but improves performance for large databases.
+Note: increases startup time but improves performance for large databases.
+
+---
 
 ### Manual Vacuum
-
-Run database vacuum manually:
 
 ```bash
 docker exec dsmr /app/cleandb.sh
 ```
 
-Verbose output:
+Verbose:
+
 ```bash
 docker exec dsmr /app/cleandb.sh -v
 ```
@@ -162,7 +174,20 @@ docker exec dsmr /app/cleandb.sh -v
 
 ## Reverse Proxy Setup
 
-### Nginx
+### Important Django Settings
+
+When running behind a reverse proxy, you may need:
+
+```yaml
+environment:
+  DJANGO_ALLOWED_HOSTS: "*"
+  # Only set if you use a fixed external URL
+  # DJANGO_CSRF_TRUSTED_ORIGINS: "https://dsmr.example.com"
+```
+
+---
+
+### Nginx Example
 
 ```nginx
 server {
@@ -174,7 +199,7 @@ server {
 
     location / {
         proxy_pass http://localhost:80;
-        proxy_set_header Host $host;
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -182,7 +207,9 @@ server {
 }
 ```
 
-### Traefik
+---
+
+### Traefik Example
 
 ```yaml
 services:
@@ -206,7 +233,7 @@ environment:
   CONTAINER_ENABLE_DEBUG: "true"
 ```
 
-**For DSMR Reader application debug**, see [DSMR Reader documentation](https://dsmr-reader.readthedocs.io/en/v6/troubleshooting/logs-debugging/).
+For DSMR Reader application debug, see upstream documentation.
 
 ---
 
@@ -222,12 +249,11 @@ environment:
 ```
 
 Multiple plugins:
+
 ```yaml
 environment:
   DSMRREADER_PLUGINS: dsmr_plugins.modules.plugin1,dsmr_plugins.modules.plugin2
 ```
-
-See [DSMR Reader Plugin Documentation](https://dsmr-reader.readthedocs.io/en/v6/reference/plugins/) for plugin development.
 
 ---
 
@@ -235,19 +261,22 @@ See [DSMR Reader Plugin Documentation](https://dsmr-reader.readthedocs.io/en/v6/
 
 ### Database Backups
 
-**Method 1 - pg_dump via dsmr container:**
+**Method 1:**
+
 ```bash
 docker exec dsmr sh -c 'PGPASSWORD=$DJANGO_DATABASE_PASSWORD \
   pg_dump -h $DJANGO_DATABASE_HOST -U $DJANGO_DATABASE_USER \
   $DJANGO_DATABASE_NAME' > backup.sql
 ```
 
-**Method 2 - pg_dump via dsmrdb container:**
+**Method 2:**
+
 ```bash
 docker exec dsmrdb pg_dump -U dsmrreader dsmrreader > backup.sql
 ```
 
-**Method 3 - Docker volume backup:**
+**Method 3:**
+
 ```bash
 docker run --rm \
   -v dsmrdb_data:/volume \
@@ -255,11 +284,13 @@ docker run --rm \
   alpine tar czf /backup/dsmrdb.tar.gz -C /volume ./
 ```
 
-### Automated Backups
+---
 
-Create cron job:
+## Automated Backups
+
+Example cron job:
+
 ```bash
-# /etc/cron.daily/dsmr-backup
 #!/bin/bash
 BACKUP_DIR=/backups/dsmr
 DATE=$(date +%Y%m%d_%H%M%S)
@@ -267,15 +298,12 @@ docker exec dsmrdb pg_dump -U dsmrreader dsmrreader > ${BACKUP_DIR}/dsmr_${DATE}
 find ${BACKUP_DIR} -name "dsmr_*.sql" -mtime +7 -delete
 ```
 
-### Restore
+---
+
+## Restore
 
 ```bash
-# Stop container
 docker compose stop dsmr
-
-# Restore database
 cat backup.sql | docker exec -i dsmrdb psql -U dsmrreader -d dsmrreader
-
-# Start container
 docker compose start dsmr
 ```

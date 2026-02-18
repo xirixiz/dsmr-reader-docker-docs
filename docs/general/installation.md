@@ -8,7 +8,7 @@ Complete installation instructions for DSMR Reader Docker.
 
 ### Required
 - Docker 24.0.0 or newer (or Podman)
-- Docker Compose 2.30.0 or newer
+- Docker Compose 2.0.0 or newer
 - 2GB RAM minimum (4GB recommended)
 - 10GB disk space minimum
 - USB serial port or network-connected smart meter
@@ -27,7 +27,7 @@ Complete installation instructions for DSMR Reader Docker.
 **Ubuntu/Debian:**
 ```bash
 sudo apt-get update
-sudo apt-get install docker.io docker-compose
+sudo apt-get install docker.io docker-compose-plugin
 sudo systemctl enable docker
 sudo systemctl start docker
 ```
@@ -93,6 +93,7 @@ services:
       DJANGO_DATABASE_PASSWORD: dsmrreader
 
       # Application
+      CONTAINER_RUN_MODE: standalone
       DJANGO_TIME_ZONE: Europe/Amsterdam
       DJANGO_SECRET_KEY: change-me-to-random-string
       DSMRREADER_ADMIN_USER: admin
@@ -144,10 +145,10 @@ Use the symlink script for stable device names:
 wget https://raw.githubusercontent.com/xirixiz/dsmr-reader-docker/main/container_host_scripts/host_dev_setup.sh
 
 # Make executable
-chmod +x host_dev_preparation.sh
+chmod +x host_dev_setup.sh
 
 # Create symlink
-sudo ./host_dev_preparation.sh
+sudo ./host_dev_setup.sh
 
 # This creates /dev/dsmr_p1 → /dev/ttyUSB0
 ```
@@ -173,13 +174,16 @@ sudo usermod -aG dialout $USER
 
 ## Network Smart Meter Setup
 
-For network-connected smart meters:
+This uses remote input (pull). It does NOT require remote_datalogger mode.
+For network-connected smart meters example configuration:
+
 
 ```yaml
 services:
   dsmr:
     image: xirixiz/dsmr-reader-docker:latest
     environment:
+      CONTAINER_RUN_MODE: standalone
       DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD: ipv4
       DSMRREADER_REMOTE_DATALOGGER_NETWORK_HOST: 192.168.1.100
       DSMRREADER_REMOTE_DATALOGGER_NETWORK_PORT: 23
@@ -260,7 +264,7 @@ Should see:
 curl http://localhost/healthcheck
 ```
 
-Should return HTML page.
+Should return HTTP 200.
 
 ### Configure Smart Meter
 
@@ -399,6 +403,8 @@ groups | grep docker
 ```
 
 ### Port Already in Use
+
+You may change the external port (left side) freely, for example `7777:80`.
 
 **Change port in docker-compose.yaml:**
 ```yaml
