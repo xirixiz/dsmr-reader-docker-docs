@@ -2,25 +2,80 @@
 
 DSMR Reader Docker supports three operational modes to fit different deployment scenarios.
 
+The key difference between modes is how telegrams reach DSMR Reader:
+
+- **Pull model**: DSMR Reader reads the meter itself
+- **Push model**: a remote datalogger sends data to DSMR Reader
+
 ---
 
 ## Mode Comparison
 
-| Mode                         | Smart Meter | Database   | Web UI  | Use Case         |
-|------------------------------|-------------|------------|---------|------------------|
-| **standalone**               | ✅ Local     | ✅ Yes      | ✅ Yes   | All-in-one setup |
-| **server_remote_datalogger** | ❌ Remote    | ✅ Yes      | ✅ Yes   | Central server   |
-| **remote_datalogger**        | ✅ Local     | ❌ Forwards | ❌ No    | Remote sensor    |
+| Mode | Meter Access | Data Flow | Database | Web UI | Typical Use |
+|------|-------------|-----------|----------|--------|-------------|
+| **standalone** | Local or network | **Pull** | Yes | Yes | All in one setup |
+| **server_remote_datalogger** | None | **Receives push** | Yes | Yes | Central server |
+| **remote_datalogger** | Local or network | **Push** | No | No | Remote forwarder |
 
 ---
 
-## Standalone Mode (Default)
+## Data Flow Explained
 
-**When to use:** Single location with smart meter directly connected.
+### Pull (recommended for most users)
 
-Complete DSMR Reader installation with database and web interface.
+DSMR Reader reads the meter itself.
 
-### Configuration
+Examples:
+
+- USB P1 cable
+- ser2net
+- TCP P1 gateway
+- WiFi P1 dongle
+
+```
+[Smart meter] → DSMR Reader
+```
+
+Used by:
+
+- standalone
+
+---
+
+### Push (advanced setups)
+
+A separate datalogger reads the meter and sends data via API.
+
+```
+[Smart meter] → [Remote datalogger] → [server_remote_datalogger] (DSMR Reader API)
+```
+
+Used by:
+
+- remote_datalogger + server_remote_datalogger
+
+---
+
+# Standalone Mode (Default)
+
+**When to use:** single location or simple setups.
+
+Runs the complete DSMR Reader stack:
+
+- database
+- web interface
+- datalogger
+
+The datalogger can read the meter:
+
+- locally (USB)
+- remotely (ser2net or TCP)
+
+⚠️ No API configuration required.
+
+---
+
+## Example: Full standalone stack
 
 ```yaml
 services:
@@ -55,117 +110,40 @@ services:
 
 ---
 
-## Server Remote Datalogger Mode
+## Example: Remote meter via network (pull)
 
-**When to use:** Central server receiving data from multiple remote locations.
-
-Runs database and web interface but receives telegrams via API from remote dataloggers.
-
-### Server Configuration
-
-```yaml
-services:
-  dsmrdb:
-    image: postgres:17-alpine
-    # ... same as standalone ...
-
-  dsmr-server:
-    image: xirixiz/dsmr-reader-docker:latest
-    depends_on:
-      - dsmrdb
-    ports:
-      - "80:80"
-    environment:
-      CONTAINER_RUN_MODE: server_remote_datalogger
-      # ... database and application config ...
-```
-
-### Setup Steps
-
-1. Start server container
-2. Access web interface
-3. Navigate to: Settings → API → Create API key
-4. Copy API key for use in remote dataloggers
-5. Configure remote dataloggers with server URL and API key
-
----
-
-## Remote Datalogger Mode
-
-**When to use:** Remote location with smart meter, forwarding to central server.
-
-Reads smart meter locally and forwards telegrams to server. No database or web interface.
-
-### Remote Configuration
-
-```yaml
-services:
-  dsmr-remote:
-    image: xirixiz/dsmr-reader-docker:latest
-    devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0
-    environment:
-      CONTAINER_RUN_MODE: remote_datalogger
-
-      # API configuration
-      DSMRREADER_REMOTE_DATALOGGER_API_HOSTS: http://dsmr-server
-      DSMRREADER_REMOTE_DATALOGGER_API_KEYS: your-api-key-from-server
-
-      # Serial configuration
-      DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD: serial
-      DSMRREADER_REMOTE_DATALOGGER_SERIAL_DEVICE: /dev/ttyUSB0
-      DSMRREADER_REMOTE_DATALOGGER_SERIAL_BAUDRATE: 115200
-      DSMRREADER_REMOTE_DATALOGGER_SERIAL_BYTESIZE: 8
-```
-
-### Network Smart Meters
-
-For network-connected smart meters:
+This still uses **standalone**.
 
 ```yaml
 environment:
-  CONTAINER_RUN_MODE: remote_datalogger
-  DSMRREADER_REMOTE_DATALOGGER_API_HOSTS: http://dsmr-server
-  DSMRREADER_REMOTE_DATALOGGER_API_KEYS: your-api-key
+  CONTAINER_RUN_MODE: standalone
   DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD: ipv4
   DSMRREADER_REMOTE_DATALOGGER_NETWORK_HOST: 192.168.1.100
   DSMRREADER_REMOTE_DATALOGGER_NETWORK_PORT: 23
 ```
 
+✅ One container
+✅ No API keys
+✅ Recommended for most users
+
 ---
 
-## Multi-Location Setup Example
+# Server Remote Datalogger Mode
 
-### Scenario
-- Main house: Server with database and web interface
-- Garage: Remote datalogger with smart meter
-- Vacation home: Remote datalogger with smart meter
+**When to use:** central server receiving data from remote forwarders.
 
-### Architecture
+This container:
 
-```
-[Garage Smart Meter] → [Remote Datalogger] ─┐
-                                             │
-                                             ├──→ [Server] → [Database] → [Web UI]
-                                             │
-[Vacation Smart Meter] → [Remote Datalogger]─┘
-```
+- runs database and web UI
+- does NOT read the meter
+- expects incoming API data
 
-### Implementation
+---
 
-**Server (Main House):**
+## Server Configuration
+
 ```yaml
-# docker-compose.yaml at main house
 services:
-  dsmrdb:
-    image: postgres:17-alpine
-    volumes:
-      - dsmrdb_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: dsmrreader
-      POSTGRES_PASSWORD: dsmrreader
-      POSTGRES_DB: dsmrreader
-
   dsmr-server:
     image: xirixiz/dsmr-reader-docker:latest
     depends_on:
@@ -184,36 +162,45 @@ services:
       DSMRREADER_ADMIN_PASSWORD: admin
 ```
 
-**Remote Datalogger (Garage):**
-```yaml
-# docker-compose.yaml at garage
-services:
-  dsmr-garage:
-    image: xirixiz/dsmr-reader-docker:latest
-    devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0
-    environment:
-      CONTAINER_RUN_MODE: remote_datalogger
-      DSMRREADER_REMOTE_DATALOGGER_API_HOSTS: http://main-house:80
-      DSMRREADER_REMOTE_DATALOGGER_API_KEYS: api-key-from-server
-      DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD: serial
-      DSMRREADER_REMOTE_DATALOGGER_SERIAL_DEVICE: /dev/ttyUSB0
-      DSMRREADER_REMOTE_DATALOGGER_SERIAL_BAUDRATE: 115200
-      DSMRREADER_REMOTE_DATALOGGER_SERIAL_BYTESIZE: 8
-```
+---
 
-**Remote Datalogger (Vacation Home):**
+## Setup Steps
+
+1. Start server container
+2. Access web interface
+3. Navigate to Settings → API
+4. Create API key
+5. Copy API key for remote dataloggers
+
+---
+
+# Remote Datalogger Mode
+
+**When to use:** separate device near the smart meter.
+
+This container:
+
+- reads the meter
+- pushes telegrams to the server API
+- has no database
+- has no web UI
+
+⚠️ API configuration is required.
+
+---
+
+## Remote Configuration (serial)
+
 ```yaml
-# docker-compose.yaml at vacation home
 services:
-  dsmr-vacation:
+  dsmr-remote:
     image: xirixiz/dsmr-reader-docker:latest
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
     environment:
       CONTAINER_RUN_MODE: remote_datalogger
-      DSMRREADER_REMOTE_DATALOGGER_API_HOSTS: http://main-house:80
-      DSMRREADER_REMOTE_DATALOGGER_API_KEYS: api-key-from-server
+      DSMRREADER_REMOTE_DATALOGGER_API_HOSTS: http://dsmr-server
+      DSMRREADER_REMOTE_DATALOGGER_API_KEYS: your-api-key
       DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD: serial
       DSMRREADER_REMOTE_DATALOGGER_SERIAL_DEVICE: /dev/ttyUSB0
       DSMRREADER_REMOTE_DATALOGGER_SERIAL_BAUDRATE: 115200
@@ -222,39 +209,81 @@ services:
 
 ---
 
-## Troubleshooting
+## Remote Configuration (network meter)
 
-### Remote Datalogger Can't Connect
+```yaml
+environment:
+  CONTAINER_RUN_MODE: remote_datalogger
+  DSMRREADER_REMOTE_DATALOGGER_API_HOSTS: http://dsmr-server
+  DSMRREADER_REMOTE_DATALOGGER_API_KEYS: your-api-key
+  DSMRREADER_REMOTE_DATALOGGER_INPUT_METHOD: ipv4
+  DSMRREADER_REMOTE_DATALOGGER_NETWORK_HOST: 192.168.1.100
+  DSMRREADER_REMOTE_DATALOGGER_NETWORK_PORT: 23
+```
 
-**Check network connectivity:**
+---
+
+# Multi Location Setup Example
+
+## Architecture
+
+```
+[Garage meter] → [Remote datalogger] ─┐
+                                       │
+                                       ├──→ [Server] → [Database] → [Web UI]
+                                       │
+[Vacation meter] → [Remote datalogger]─┘
+```
+
+---
+
+# Troubleshooting
+
+## Remote datalogger cannot connect
+
+**Check connectivity**
+
 ```bash
-# From remote location
 curl http://dsmr-server/healthcheck
 ```
 
-**Check API key:**
-- Verify API key in server web interface (Settings → API)
-- Ensure API key matches in remote configuration
+**Check API key**
 
-**Check logs:**
+- Verify in Settings → API
+- Ensure values match
+
+**Check logs**
+
 ```bash
 docker compose logs dsmr-remote
 ```
 
-### Server Not Receiving Data
+---
 
-**Verify API is enabled:**
-- Access server web interface
-- Settings → API → Verify API is enabled
+## Server not receiving data
 
-**Check firewall:**
+**Verify API enabled**
+
+- Settings → API
+- Ensure key exists
+
+**Check firewall**
+
 ```bash
-# On server
-sudo ufw status
 sudo ufw allow 80/tcp
 ```
 
-**Check logs on server:**
+**Check server logs**
+
 ```bash
 docker compose logs dsmr-server | grep -i api
 ```
+
+---
+
+# Important Notes
+
+- “Remote” refers to the **datalogger process location**, not the meter type
+- Standalone can read meters over the network
+- The remote datalogger is mainly for push based deployments
+- For most home setups, **standalone + pull is simpler**
